@@ -1,6 +1,7 @@
 package com.adwitiya.cs7cs3.towerpower;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +14,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
+
+import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -42,6 +51,36 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        checkFirebaseAuth(navigationView);
+
+    }
+
+    private void checkFirebaseAuth(NavigationView view){
+        // Code to check fire base Auth instance
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Name, email address, and profile photo Url
+            String user_name = user.getDisplayName();
+            String email = user.getEmail();
+            Uri photoUrl = user.getPhotoUrl();
+
+            // Check if user's email is verified
+            boolean emailVerified = user.isEmailVerified();
+
+            // The user's ID, unique to the Firebase project. Do NOT use this value to
+            // authenticate with your backend server, if you have one. Use
+            // FirebaseUser.getToken() instead.
+            View header = view.getHeaderView(0);
+            TextView UserName = (TextView) header.findViewById(R.id.user_name);
+            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
+            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            UserName.setText(user_name);
+            UserEmail.setText(email);
+            if (photoUrl != null) {
+                Picasso.with(this).load(photoUrl).into(ProfilePic);
+            }
+        }
+
     }
 
     @Override
@@ -59,6 +98,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         hideSystemUI();
         return true;
     }

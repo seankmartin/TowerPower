@@ -2,6 +2,7 @@ package com.adwitiya.cs7cs3.towerpower;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -18,8 +19,13 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
 
 public class FirebaseLogin extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
@@ -50,6 +56,9 @@ public class FirebaseLogin extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // Code to check fire base Auth instance
+        checkFirebaseAuth(navigationView);
+
         ListView listView = findViewById(R.id.list_view);
 
         MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
@@ -57,6 +66,35 @@ public class FirebaseLogin extends AppCompatActivity
 
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
+
+    }
+
+    private void checkFirebaseAuth(NavigationView view){
+        // Code to check fire base Auth instance
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Name, email address, and profile photo Url
+            String user_name = user.getDisplayName();
+            String email = user.getEmail();
+            Uri photoUrl = user.getPhotoUrl();
+
+            // Check if user's email is verified
+            boolean emailVerified = user.isEmailVerified();
+
+            // The user's ID, unique to the Firebase project. Do NOT use this value to
+            // authenticate with your backend server, if you have one. Use
+            // FirebaseUser.getToken() instead.
+            View header = view.getHeaderView(0);
+            TextView UserName = (TextView) header.findViewById(R.id.user_name);
+            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
+            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            UserName.setText(user_name);
+            UserEmail.setText(email);
+            if (photoUrl != null) {
+                Picasso.with(this).load(photoUrl).into(ProfilePic);
+            }
+        }
+
     }
 
     public static class MyArrayAdapter extends ArrayAdapter<Class> {
