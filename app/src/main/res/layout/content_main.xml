@@ -129,5 +129,23 @@
         android:textSize="18sp"
         android:typeface="sans" />
 
+    <ImageView
+        android:id="@+id/divider_4"
+        android:layout_width="wrap_content"
+        android:layout_height="10dp"
+        app:srcCompat="?attr/dividerHorizontal" />
+
+    <TextView
+        android:id="@+id/group_text"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_gravity="center_horizontal|center"
+        android:fontFamily="sans-serif-smallcaps"
+        android:scaleType="fitCenter"
+        android:text="Group 5 - Trinity College Dublin"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="24sp"
+        android:typeface="sans" />
+
 </LinearLayout>
 
