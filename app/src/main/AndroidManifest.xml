@@ -24,7 +24,10 @@
             android:label="Account"
             android:theme="@style/AppTheme.Fullscreen" />
         <activity android:name=".EmailPasswordActivity" />
-        <activity android:name=".GoogleSignInActivity"></activity>
+        <activity android:name=".GoogleSignInActivity" />
+        <activity android:name=".LiveMaps"
+            android:label="Live Maps"
+            android:theme="@style/AppTheme.Fullscreen"></activity>
     </application>
 
 </manifest>

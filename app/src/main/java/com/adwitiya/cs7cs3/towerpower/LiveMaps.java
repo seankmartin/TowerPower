@@ -1,45 +1,36 @@
 package com.adwitiya.cs7cs3.towerpower;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.view.View;
 
-public class FirebaseLogin extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
+public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
     View mDecorView;
-    private static final Class[] CLASSES = new Class[]{
-            EmailPasswordActivity.class,
-            GoogleSignInActivity.class
-    };
-
-    private static final int[] DESCRIPTION_IDS = new int[] {
-            R.string.desc_emailpassword,
-            R.string.desc_google_sign_in
-    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        hideSystemUI();
-        setContentView(R.layout.activity_firebase_login);
+        setContentView(R.layout.activity_live_maps);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "This game is Awesome !!!!", Snackbar.LENGTH_LONG)
+                        .setAction("Tower Power", null).show();
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -49,64 +40,7 @@ public class FirebaseLogin extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        ListView listView = findViewById(R.id.list_view);
-
-        MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
-        adapter.setDescriptionIds(DESCRIPTION_IDS);
-
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(this);
     }
-
-    public static class MyArrayAdapter extends ArrayAdapter<Class> {
-
-        private Context mContext;
-        private Class[] mClasses;
-        private int[] mDescriptionIds;
-
-        public MyArrayAdapter(Context context, int resource, Class[] objects) {
-            super(context, resource, objects);
-
-            mContext = context;
-            mClasses = objects;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = convertView;
-
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
-                view = inflater.inflate(android.R.layout.simple_list_item_2, null);
-            }
-
-            ((TextView) view.findViewById(android.R.id.text1)).setText(mClasses[position].getSimpleName());
-            ((TextView) view.findViewById(android.R.id.text2)).setText(mDescriptionIds[position]);
-
-            return view;
-        }
-
-        public void setDescriptionIds(int[] descriptionIds) {
-            mDescriptionIds = descriptionIds;
-        }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-       Class clicked = CLASSES[position];
-       if (clicked == EmailPasswordActivity.class){
-           Intent EmailPassActivity = new Intent(getApplicationContext(),EmailPasswordActivity.class);
-           startActivity(EmailPassActivity);
-       }
-        if (clicked == GoogleSignInActivity.class){
-            Intent GoogleSignInActivity = new Intent(getApplicationContext(),GoogleSignInActivity.class);
-            startActivity(GoogleSignInActivity);
-        }
-
-       //startActivity(new Intent(this, clicked));
-    }
-
     @Override
     public void onBackPressed() {
         hideSystemUI();
@@ -159,7 +93,6 @@ public class FirebaseLogin extends AppCompatActivity
             // Navigate to Map Activity
             Intent LiveMap = new Intent(getApplicationContext(),LiveMaps.class);
             startActivity(LiveMap);
-
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
         } else if (id == R.id.nav_share) {
@@ -172,6 +105,7 @@ public class FirebaseLogin extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
     // This snippet hides the system bars.
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.

@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_map) {
             // Navigate to Map Activity
+            Intent LiveMap = new Intent(getApplicationContext(),LiveMaps.class);
+            startActivity(LiveMap);
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
         } else if (id == R.id.nav_share) {
