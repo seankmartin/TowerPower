@@ -67,6 +67,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            finish();
             return true;
         }
 
