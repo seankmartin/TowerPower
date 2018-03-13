@@ -26,6 +26,7 @@ import org.w3c.dom.Text;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     View mDecorView;
+    private FirebaseAuth mAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +81,6 @@ public class MainActivity extends AppCompatActivity
                 Picasso.with(this).load(photoUrl).into(ProfilePic);
             }
         }
-
     }
 
     @Override
