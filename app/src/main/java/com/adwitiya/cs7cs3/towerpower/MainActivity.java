@@ -1,12 +1,15 @@
 package com.adwitiya.cs7cs3.towerpower;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity
     private TextView DestroyTV;
     private ImageView DefendIV;
     private TextView DefendTV;
+    private TextView group5;
     private FirebaseAuth mAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +70,7 @@ public class MainActivity extends AppCompatActivity
         DefendIV = (ImageView)findViewById(R.id.defend_logo);
         DefendTV = (TextView)findViewById(R.id.defend_text);
 
+        group5 = (TextView)findViewById(R.id.group_text);
 
 
         Animation anim = AnimationUtils.loadAnimation(this,R.anim.transition);
@@ -98,6 +104,13 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Defend your bases against the attacks ", Snackbar.LENGTH_LONG)
                         .setAction("Tower Power", null).show();
+            }
+        });
+
+        group5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/adwitiya/TowerPower")));
             }
         });
     }
@@ -206,6 +219,29 @@ public class MainActivity extends AppCompatActivity
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {
             // Navigate to Send Activity
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Enter Email ID");
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+            builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                   String m_Text = input.getText().toString();
+                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                            "mailto",m_Text, null));
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
+                    startActivity(Intent.createChooser(emailIntent, "Send email..."));
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
