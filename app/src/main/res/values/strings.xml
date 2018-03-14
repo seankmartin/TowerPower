@@ -61,6 +61,9 @@
     <string name="firebase_status_fmt">Firebase User: %s</string>
     <string name="firebase_user_management">Firebase User Management</string>
 
+    <string name="def_user">Default User</string>
+    <string name="def_email">cs7cs3@tcd.ie</string>
+
     <string name="google_status_fmt">Google User: %s</string>
     <string name="google_title_text">Google Sign In</string>
 

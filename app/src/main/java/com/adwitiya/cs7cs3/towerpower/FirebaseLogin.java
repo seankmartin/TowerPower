@@ -92,6 +92,15 @@ public class FirebaseLogin extends AppCompatActivity
                 Picasso.with(this).load(photoUrl).into(ProfilePic);
             }
         }
+        if (user == null){
+            View header = view.getHeaderView(0);
+            TextView UserName = (TextView) header.findViewById(R.id.user_name);
+            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
+            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            UserName.setText(getText(R.string.def_user));
+            UserEmail.setText(getText(R.string.def_email));
+            ProfilePic.setImageResource(R.drawable.def_icon);
+        }
 
     }
 
@@ -152,6 +161,13 @@ public class FirebaseLogin extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        checkFirebaseAuth(navigationView);
     }
 
     @Override

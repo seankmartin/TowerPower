@@ -74,6 +74,14 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        checkFirebaseAuth(navigationView);
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -130,7 +138,15 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 Picasso.with(this).load(photoUrl).into(ProfilePic);
             }
         }
-
+        if (user == null){
+            View header = view.getHeaderView(0);
+            TextView UserName = (TextView) header.findViewById(R.id.user_name);
+            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
+            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            UserName.setText(getText(R.string.def_user));
+            UserEmail.setText(getText(R.string.def_email));
+            ProfilePic.setImageResource(R.drawable.def_icon);
+        }
     }
 
     // This snippet hides the system bars.
