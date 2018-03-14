@@ -3,6 +3,7 @@ package com.adwitiya.cs7cs3.towerpower;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -34,6 +35,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -53,6 +55,9 @@ import com.adwitiya.cs7cs3.towerpower.PositionHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.StrictMath.cos;
+import static java.lang.StrictMath.sin;
 
 public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener,LocationEngineListener, PermissionsListener {
     View mDecorView;
@@ -127,6 +132,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (lastLocation != null) {
             originLocation = lastLocation;
             setCameraPosition(lastLocation);
+            drawCircle(map, new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude()), 5, 500);
         } else {
             locationEngine.addLocationEngineListener(this);
         }
@@ -379,7 +385,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
                     for (DocumentSnapshot doc : task.getResult()) {
                         PositionHelper city = doc.toObject(PositionHelper.class);
-                       positionList.add(city);
+                        positionList.add(city);
                     }
                     mapView.getMapAsync(new OnMapReadyCallback() {
                         @Override
@@ -395,10 +401,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                         .snippet(snip));
                             }
 
-                         //   mapboxMap.setCameraPosition(new CameraPosition.Builder()
-                           //         .target(new LatLng(53.34863, -6.25603))
-                             //       .zoom(15)
-                               //     .build());
                             map = mapboxMap;
                             enableLocationPlugin();
                         }
@@ -410,4 +412,43 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
         return positionList;
     }
+
+    public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.WHITE);
+        polylineOptions.width(0.5f); // change the line width here
+        polylineOptions.addAll(getCirclePoints(position, radiusMeters));
+        map.addPolyline(polylineOptions);
+    }
+
+    private static ArrayList<LatLng> getCirclePoints(LatLng position, double radius) {
+        int degreesBetweenPoints = 10; // change here for shape
+        int numberOfPoints = (int) Math.floor(360 / degreesBetweenPoints);
+        double distRadians = radius / 6371000.0; // earth radius in meters
+        double centerLatRadians = position.getLatitude() * Math.PI / 180;
+        double centerLonRadians = position.getLongitude() * Math.PI / 180;
+        ArrayList<LatLng> polygons = new ArrayList<>(); // array to hold all the points
+        for (int index = 0; index < numberOfPoints; index++) {
+            double degrees = index * degreesBetweenPoints;
+            double degreeRadians = degrees * Math.PI / 180;
+            double pointLatRadians = Math.asin(sin(centerLatRadians) * cos(distRadians)
+                    + cos(centerLatRadians) * sin(distRadians) * cos(degreeRadians));
+            double pointLonRadians = centerLonRadians + Math.atan2(sin(degreeRadians)
+                            * sin(distRadians) * cos(centerLatRadians),
+                    cos(distRadians) - sin(centerLatRadians) * sin(pointLatRadians));
+            double pointLat = pointLatRadians * 180 / Math.PI;
+            double pointLon = pointLonRadians * 180 / Math.PI;
+            LatLng point = new LatLng(pointLat, pointLon);
+            polygons.add(point);
+        }
+        // add first point at end to close circle
+        polygons.add(polygons.get(0));
+        return polygons;
+    }
+
+
 }
+
+
+
+
