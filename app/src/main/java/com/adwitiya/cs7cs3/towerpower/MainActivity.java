@@ -1,6 +1,8 @@
 package com.adwitiya.cs7cs3.towerpower;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,6 +16,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,24 +30,85 @@ import org.w3c.dom.Text;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     View mDecorView;
+    private ImageView CollectIV;
+    private TextView CollectTV;
+    private ImageView DestroyIV;
+    private TextView DestroyTV;
+    private ImageView DefendIV;
+    private TextView DefendTV;
     private FirebaseAuth mAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         hideSystemUI();
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setAnimation(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
 
+    }
+
+    private void setAnimation(Context context){
+        DestroyIV = (ImageView)findViewById(R.id.destroy_logo);
+        DestroyTV = (TextView)findViewById(R.id.destroy_text);
+
+        CollectIV = (ImageView)findViewById(R.id.collect_logo);
+        CollectTV = (TextView)findViewById(R.id.collect_text);
+
+        DefendIV = (ImageView)findViewById(R.id.defend_logo);
+        DefendTV = (TextView)findViewById(R.id.defend_text);
+
+
+
+        Animation anim = AnimationUtils.loadAnimation(this,R.anim.transition);
+        Animation anim1 = AnimationUtils.loadAnimation(this,R.anim.transition2);
+        Animation anim2 = AnimationUtils.loadAnimation(this,R.anim.transition3);
+        CollectTV.startAnimation(anim);
+        CollectIV.startAnimation(anim);
+
+        DestroyTV.startAnimation(anim1);
+        DestroyIV.startAnimation(anim1);
+
+        DefendTV.startAnimation(anim2);
+        DefendIV.startAnimation(anim2);
+
+        CollectIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Collect all the treasures and puzzles to beat the game", Snackbar.LENGTH_LONG)
+                        .setAction("Tower Power", null).show();
+            }
+        });
+        DestroyIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Destroy all the towers before times runs out", Snackbar.LENGTH_LONG)
+                        .setAction("Tower Power", null).show();
+            }
+        });
+        DefendIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Defend your bases against the attacks ", Snackbar.LENGTH_LONG)
+                        .setAction("Tower Power", null).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setAnimation(this);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        checkFirebaseAuth(navigationView);
     }
 
     private void checkFirebaseAuth(NavigationView view){
