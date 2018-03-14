@@ -21,7 +21,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     // MapBox
-    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:5.5.0'
+    implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:5.5.0@aar') {
+        transitive = true
+    }
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation:0.11.0'
+    implementation('com.mapbox.mapboxsdk:mapbox-android-navigation-ui:0.11.0') {
+        transitive = true
+    }
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:support-v4:26.1.0'
     implementation 'com.android.support:design:26.1.0'
@@ -29,6 +35,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:11.8.0'
     // Google Sign In SDK (only required for Google Sign In)
     implementation 'com.google.android.gms:play-services-auth:11.8.0'
+    implementation 'com.google.firebase:firebase-firestore:11.8.0'
+
     compile 'com.squareup.picasso:picasso:2.5.2'
     //compile 'com.google.android.gms:play-services-auth:11.8.0'
     testImplementation 'junit:junit:4.12'
@@ -37,6 +45,7 @@ dependencies {
 
     implementation 'com.google.android.gms:play-services-maps:11.8.0'
 }
+
 
 
 

@@ -1,8 +1,11 @@
 package com.adwitiya.cs7cs3.towerpower;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,26 +23,61 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerMode;
+import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
+import com.mapbox.services.android.telemetry.location.LocationEngine;
+import com.mapbox.services.android.telemetry.location.LocationEngineListener;
+import com.mapbox.services.android.telemetry.location.LocationEnginePriority;
+import com.mapbox.services.android.telemetry.location.LostLocationEngine;
+import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
+import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import com.squareup.picasso.Picasso;
+import com.adwitiya.cs7cs3.towerpower.PositionHelper;
 
-public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
+import java.util.ArrayList;
+import java.util.List;
+
+public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener,LocationEngineListener, PermissionsListener {
     View mDecorView;
+    String MapBoxZoom;
     private MapView mapView;
+    // variables for adding location layer
+    private MapboxMap map;
+    private PermissionsManager permissionsManager;
+    private LocationLayerPlugin locationPlugin;
+    private LocationEngine locationEngine;
+    private Location originLocation;
+    private FirebaseFirestore mDatabase;
+    private List<PositionHelper> positionList;
+    private static final String TAG = LiveMaps.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_maps);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //Firebase Database
+        FirebaseApp.initializeApp(this);
+        mDatabase = FirebaseFirestore.getInstance();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -51,33 +90,100 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         checkFirebaseAuth(navigationView);
 
         //MapBox Code
+        MapBoxZoom = getString(R.string.mapbox_zoom);
+        final Double MapBoxZoomDouble = Double.parseDouble(MapBoxZoom);
         Mapbox.getInstance(this,getString(R.string.mapbox_key));
         mapView = (MapView)findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);
         //give a marker location to the map
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                mapboxMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(53.34863, -6.25603))
-                        .title(getString(R.string.map_title))
-                        .snippet(getString(R.string.map_snip)));
-                mapboxMap.setCameraPosition(new CameraPosition.Builder()
-                        .target(new LatLng(53.34863, -6.25603))
-                        .zoom(15.0)
-                        .build());
-            }
-
-        });
-
-
+        //Get the positions from DB
+        positionList = new ArrayList<>();
+        positionList = retrieveMultiLocFromDB();
 
     }
 
+    @SuppressWarnings( {"MissingPermission"})
+    private void enableLocationPlugin() {
+        // Check if permissions are enabled and if not request
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            // Create an instance of LOST location engine
+            initializeLocationEngine();
+
+            locationPlugin = new LocationLayerPlugin(mapView, map, locationEngine);
+            locationPlugin.setLocationLayerEnabled(LocationLayerMode.TRACKING);
+        } else {
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(this);
+        }
+    }
+
+    @SuppressWarnings( {"MissingPermission"})
+    private void initializeLocationEngine() {
+        locationEngine = new LostLocationEngine(this);
+        locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
+        locationEngine.activate();
+
+        Location lastLocation = locationEngine.getLastLocation();
+        if (lastLocation != null) {
+            originLocation = lastLocation;
+            setCameraPosition(lastLocation);
+        } else {
+            locationEngine.addLocationEngineListener(this);
+        }
+    }
+
+    private void setCameraPosition(Location location) {
+        Double MapBoxZoomDouble = Double.parseDouble(MapBoxZoom);
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(location.getLatitude(), location.getLongitude()),MapBoxZoomDouble));
+    }
+
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        //
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            enableLocationPlugin();
+        } else {
+            finish();
+        }
+    }
+    @Override
+    @SuppressWarnings( {"MissingPermission"})
+    public void onConnected() {
+        locationEngine.requestLocationUpdates();
+    }
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null) {
+            originLocation = location;
+            setCameraPosition(location);
+            locationEngine.removeLocationEngineListener(this);
+        }
+    }
+
+
+
+    @Override
+    @SuppressWarnings( {"MissingPermission"})
     protected void onStart() {
         super.onStart();
+        if (locationEngine != null) {
+            locationEngine.requestLocationUpdates();
+        }
+        if (locationPlugin != null) {
+            locationPlugin.onStart();
+        }
         mapView.onStart();
+
     }
 
     @Override
@@ -89,6 +195,12 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     @Override
     public void onStop() {
         super.onStop();
+        if (locationEngine != null) {
+            locationEngine.removeLocationUpdates();
+        }
+        if (locationPlugin != null) {
+            locationPlugin.onStop();
+        }
         mapView.onStop();
     }
 
@@ -96,6 +208,9 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+        if (locationEngine != null) {
+            locationEngine.deactivate();
+        }
     }
 
     @Override
@@ -146,6 +261,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         mapView.onResume();
+
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -251,5 +367,47 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LOW_PROFILE;
         mDecorView.setSystemUiVisibility(uiOptions);
+    }
+
+    private List<PositionHelper> retrieveMultiLocFromDB() {
+        CollectionReference colRef = mDatabase.collection("locations");
+        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+
+
+                    for (DocumentSnapshot doc : task.getResult()) {
+                        PositionHelper city = doc.toObject(PositionHelper.class);
+                       positionList.add(city);
+                    }
+                    mapView.getMapAsync(new OnMapReadyCallback() {
+                        @Override
+                        public void onMapReady(MapboxMap mapboxMap) {
+                            for (PositionHelper position : positionList ){
+
+                                String snip = ""+position.getLatitude();
+                                snip.toString();
+                                mapboxMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
+
+                                        .title(getString(R.string.map_title))
+                                        .snippet(snip));
+                            }
+
+                         //   mapboxMap.setCameraPosition(new CameraPosition.Builder()
+                           //         .target(new LatLng(53.34863, -6.25603))
+                             //       .zoom(15)
+                               //     .build());
+                            map = mapboxMap;
+                            enableLocationPlugin();
+                        }
+
+                    });
+                }
+            }
+        });
+
+        return positionList;
     }
 }

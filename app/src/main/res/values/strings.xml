@@ -86,6 +86,8 @@
     <string name="email_fmt">Email: %s</string>
     <string name="map_title">Map Boxxxxxxxxxxx</string>
     <string name="map_snip">Snippet</string>
+    <string name="mapbox_zoom">15.0</string>
+
 
 
 
