@@ -21,10 +21,18 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.squareup.picasso.Picasso;
 
 public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
     View mDecorView;
+    private MapView mapView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +50,54 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
 
+        //MapBox Code
+        Mapbox.getInstance(this,getString(R.string.mapbox_key));
+        mapView = (MapView)findViewById(R.id.map);
+        mapView.onCreate(savedInstanceState);
+        //give a marker location to the map
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                mapboxMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(53.34863, -6.25603))
+                        .title(getString(R.string.map_title))
+                        .snippet(getString(R.string.map_snip)));
+                mapboxMap.setCameraPosition(new CameraPosition.Builder()
+                        .target(new LatLng(53.34863, -6.25603))
+                        .zoom(15.0)
+                        .build());
+            }
+
+        });
+
+
+
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
     @Override
     public void onBackPressed() {
         hideSystemUI();
@@ -52,6 +107,12 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
     }
 
     @Override
@@ -84,6 +145,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
+        mapView.onResume();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
