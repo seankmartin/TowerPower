@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -57,6 +58,11 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
+        //Theme song
+        final MediaPlayer mp = MediaPlayer.create(this,R.raw.theme);
+        mp.setLooping(true);
+        mp.start();
+
 
     }
 
