@@ -55,6 +55,7 @@ import com.adwitiya.cs7cs3.towerpower.PositionHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.StrictMath.cos;
 import static java.lang.StrictMath.sin;
@@ -104,7 +105,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         //give a marker location to the map
         //Get the positions from DB
         positionList = new ArrayList<>();
-        positionList = retrieveMultiLocFromDB();
+        retrieveMultiLocFromDB();
 
     }
 
@@ -363,17 +364,36 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             ProfilePic.setImageResource(R.drawable.def_icon);
         }
     }
-    private List<PositionHelper> retrieveMultiLocFromDB() {
+    private void retrieveMultiLocFromDB() {
         CollectionReference colRef = mDatabase.collection("locations");
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-
-
                     for (DocumentSnapshot doc : task.getResult()) {
-                        PositionHelper city = doc.toObject(PositionHelper.class);
-                        positionList.add(city);
+                        if (doc != null && doc.exists()) {
+                            Map<String, Object> map = doc.getData();
+                            double lat=0, lon=0;
+                            Object tmp =  map.get("latitude");
+                            if (tmp!=null) lat = (double) tmp;
+                            tmp =  map.get("longitude");
+                            if (tmp!=null) lon = (double) tmp;
+                            positionList.add(new PositionHelper(lat,lon));
+
+
+                            Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
+                            if (map2!=null){
+                                ArrayList<Map<String, Object>> map3 = (ArrayList<Map<String, Object>>) map2.get("locations");
+                                for (Map<String, Object> locationMap: map3) {
+                                    tmp =  locationMap.get("lat");
+                                    if (tmp!=null) lat = (double) tmp;
+                                    tmp =  locationMap.get("lng");
+                                    if (tmp!=null) lon = (double) tmp;
+                                    positionList.add(new PositionHelper(lat,lon));
+                                }
+                            }
+
+                        }
                     }
                     mapView.getMapAsync(new OnMapReadyCallback() {
                         @Override
@@ -397,8 +417,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 }
             }
         });
-
-        return positionList;
     }
 
     public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
