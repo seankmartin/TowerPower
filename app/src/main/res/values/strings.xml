@@ -6,6 +6,9 @@
 
     <string name="action_settings">Home</string>
     <string name="title_activity_fire_base_login_main">FireBaseLoginMain</string>
+    <string name="game_page">Search Game</string>
+
+
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>
     <string name="desc_google_sign_in">Use a Google Sign In credential to authenticate with Firebase.</string>
@@ -87,8 +90,6 @@
     <string name="map_title">Map Boxxxxxxxxxxx</string>
     <string name="map_snip">Snippet</string>
     <string name="mapbox_zoom">15.0</string>
-
-
 
 
 </resources>

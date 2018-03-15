@@ -4,12 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.adwitiya.cs7cs3.towerpower.LiveMaps">
+    tools:context="com.adwitiya.cs7cs3.towerpower.FirebaseLogin">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColorPrimary ="@color/black"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
@@ -25,6 +24,9 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_maps" />
+    <include
+        layout="@layout/content_game"
+        android:layout_height="515dp"
+        tools:layout_editor_absoluteY="77dp" />
 
 </android.support.design.widget.CoordinatorLayout>

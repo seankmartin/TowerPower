@@ -78,6 +78,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_maps);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(Color.BLACK);
         setSupportActionBar(toolbar);
 
         //Firebase Database
@@ -221,7 +222,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
     @Override
     public void onBackPressed() {
-        hideSystemUI();
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -240,7 +241,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        hideSystemUI();
         return true;
     }
 
@@ -249,7 +249,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        hideSystemUI();
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
@@ -273,7 +272,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        hideSystemUI();
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -283,12 +281,18 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             startActivity(FireBaseLoginIntent);
         } else if (id == R.id.nav_game) {
             // Navigate to Game Activity
-
+            Intent GameIntent = new Intent(getApplicationContext(),GameSearch.class);
+            startActivity(GameIntent);
         } else if (id == R.id.nav_map) {
             // Navigate to Map Activity
             Intent LiveMap = new Intent(getApplicationContext(),LiveMaps.class);
             startActivity(LiveMap);
-        } else if (id == R.id.nav_tools) {
+        } else if (id == R.id.nav_home) {
+            // Navigate to Home Activity
+            Intent HomeIntent = new Intent(getApplicationContext(),MainActivity.class);
+            HomeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(HomeIntent);
+        }else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
@@ -359,22 +363,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             ProfilePic.setImageResource(R.drawable.def_icon);
         }
     }
-
-    // This snippet hides the system bars.
-    private void hideSystemUI() {
-        // Set the IMMERSIVE flag.
-        // Set the content to appear under the system bars so that the content
-        // doesn't resize when the system bars hide and show.
-        mDecorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LOW_PROFILE;
-        mDecorView.setSystemUiVisibility(uiOptions);
-    }
-
     private List<PositionHelper> retrieveMultiLocFromDB() {
         CollectionReference colRef = mDatabase.collection("locations");
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -445,8 +433,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         polygons.add(polygons.get(0));
         return polygons;
     }
-
-
 }
 
 

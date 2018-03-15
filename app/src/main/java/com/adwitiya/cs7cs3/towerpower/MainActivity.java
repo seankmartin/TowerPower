@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        hideSystemUI();
+        //hideSystemUI();
         setContentView(R.layout.activity_main);
         setAnimation(this);
 
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        hideSystemUI();
+        //hideSystemUI();
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         //getMenuInflater().inflate(R.menu.main, menu);
-        hideSystemUI();
+        //hideSystemUI();
         return true;
     }
 
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        hideSystemUI();
+        //hideSystemUI();
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        hideSystemUI();
+        //hideSystemUI();
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -208,8 +208,15 @@ public class MainActivity extends AppCompatActivity
            startActivity(FireBaseLoginIntent);
         } else if (id == R.id.nav_game) {
             // Navigate to Game Activity
-
-        } else if (id == R.id.nav_map) {
+            Intent GameIntent = new Intent(getApplicationContext(),GameSearch.class);
+            startActivity(GameIntent);
+        }   else if (id == R.id.nav_home) {
+            // Navigate to Home Activity
+            Intent HomeIntent = new Intent(getApplicationContext(),MainActivity.class);
+            HomeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(HomeIntent);
+        }
+        else if (id == R.id.nav_map) {
             // Navigate to Map Activity
             Intent LiveMap = new Intent(getApplicationContext(),LiveMaps.class);
             startActivity(LiveMap);

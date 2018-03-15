@@ -29,9 +29,16 @@
             android:theme="@style/AppTheme.Fullscreen" />
         <activity android:name=".EmailPasswordActivity" />
         <activity android:name=".GoogleSignInActivity" />
-        <activity android:name=".LiveMaps"
+        <activity
+            android:name=".LiveMaps"
             android:label="Live Maps"
-            android:theme="@style/AppTheme.Fullscreen"></activity>
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity
+            android:name=".GameSearch"
+            android:theme="@style/AppTheme.Fullscreen"
+            android:label= "@string/game_page">
+
+        </activity>
     </application>
 
 </manifest>

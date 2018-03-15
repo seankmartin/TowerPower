@@ -29,7 +29,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 
-public class FirebaseLogin extends AppCompatActivity
+public class GameSearch extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
     View mDecorView;
     private static final Class[] CLASSES = new Class[]{
@@ -44,7 +44,7 @@ public class FirebaseLogin extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_firebase_login);
+        setContentView(R.layout.activity_game_search);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -59,14 +59,6 @@ public class FirebaseLogin extends AppCompatActivity
 
         // Code to check fire base Auth instance
         checkFirebaseAuth(navigationView);
-
-        ListView listView = findViewById(R.id.list_view);
-
-        MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
-        adapter.setDescriptionIds(DESCRIPTION_IDS);
-
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(this);
 
     }
 
@@ -142,17 +134,17 @@ public class FirebaseLogin extends AppCompatActivity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-       Class clicked = CLASSES[position];
-       if (clicked == EmailPasswordActivity.class){
-           Intent EmailPassActivity = new Intent(getApplicationContext(),EmailPasswordActivity.class);
-           startActivity(EmailPassActivity);
-       }
+        Class clicked = CLASSES[position];
+        if (clicked == EmailPasswordActivity.class){
+            Intent EmailPassActivity = new Intent(getApplicationContext(),EmailPasswordActivity.class);
+            startActivity(EmailPassActivity);
+        }
         if (clicked == GoogleSignInActivity.class){
             Intent GoogleSignInActivity = new Intent(getApplicationContext(),GoogleSignInActivity.class);
             startActivity(GoogleSignInActivity);
         }
 
-       //startActivity(new Intent(this, clicked));
+        //startActivity(new Intent(this, clicked));
     }
 
     @Override
@@ -208,13 +200,13 @@ public class FirebaseLogin extends AppCompatActivity
             // Navigate to Game Activity
             Intent GameIntent = new Intent(getApplicationContext(),GameSearch.class);
             startActivity(GameIntent);
-
-        }  else if (id == R.id.nav_home) {
+        } else if (id == R.id.nav_home) {
             // Navigate to Home Activity
             Intent HomeIntent = new Intent(getApplicationContext(),MainActivity.class);
             HomeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(HomeIntent);
-        }  else if (id == R.id.nav_map) {
+        }
+        else if (id == R.id.nav_map) {
             // Navigate to Map Activity
             Intent LiveMap = new Intent(getApplicationContext(),LiveMaps.class);
             startActivity(LiveMap);
