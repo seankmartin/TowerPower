@@ -24,9 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import com.adwitiya.cs7cs3.towerpower.AudioPlay;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
