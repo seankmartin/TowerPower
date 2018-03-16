@@ -248,6 +248,7 @@ public class ToolsActivity extends AppCompatActivity
                 SharedPreferences.Editor editor = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
                 editor.putBoolean("SoundState", true);
                 editor.commit();
+                AudioPlay.playAudio(this,R.raw.theme);
 
             }if(SoundSwitchState == false){
                 Toast.makeText(this, "Sound Off",
@@ -255,6 +256,7 @@ public class ToolsActivity extends AppCompatActivity
                 SharedPreferences.Editor editor = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
                 editor.putBoolean("SoundState", false);
                 editor.commit();
+                AudioPlay.stopAudio();
             }
         }
 
