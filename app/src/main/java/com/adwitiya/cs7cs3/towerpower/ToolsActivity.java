@@ -25,29 +25,24 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.adwitiya.cs7cs3.towerpower.AudioPlay;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 
-public class GameSearch extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
+public class ToolsActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener{
     View mDecorView;
-    private static final Class[] CLASSES = new Class[]{
-            EmailPasswordActivity.class,
-            GoogleSignInActivity.class
-    };
 
-    private static final int[] DESCRIPTION_IDS = new int[] {
-            R.string.desc_emailpassword,
-            R.string.desc_google_sign_in
-    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game_search);
+        setContentView(R.layout.activity_tools);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -63,6 +58,20 @@ public class GameSearch extends AppCompatActivity
         // Code to check fire base Auth instance
         checkFirebaseAuth(navigationView);
 
+        //Sound Button Onclick listener
+        findViewById(R.id.sound_toogle).setOnClickListener(this);
+        Switch SoundSwitch = (Switch)findViewById(R.id.sound_toogle);
+
+        SharedPreferences soundPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
+        Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
+
+        if (soundPref == true) {
+            SoundSwitch.setChecked(true);
+        }
+            else if (soundPref == false)
+            {
+                SoundSwitch.setChecked(false);
+            }
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -102,54 +111,6 @@ public class GameSearch extends AppCompatActivity
 
     }
 
-    public static class MyArrayAdapter extends ArrayAdapter<Class> {
-
-        private Context mContext;
-        private Class[] mClasses;
-        private int[] mDescriptionIds;
-
-        public MyArrayAdapter(Context context, int resource, Class[] objects) {
-            super(context, resource, objects);
-
-            mContext = context;
-            mClasses = objects;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = convertView;
-
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
-                view = inflater.inflate(android.R.layout.simple_list_item_2, null);
-            }
-
-            ((TextView) view.findViewById(android.R.id.text1)).setText(mClasses[position].getSimpleName());
-            ((TextView) view.findViewById(android.R.id.text2)).setText(mDescriptionIds[position]);
-
-            return view;
-        }
-
-        public void setDescriptionIds(int[] descriptionIds) {
-            mDescriptionIds = descriptionIds;
-        }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Class clicked = CLASSES[position];
-        if (clicked == EmailPasswordActivity.class){
-            Intent EmailPassActivity = new Intent(getApplicationContext(),EmailPasswordActivity.class);
-            startActivity(EmailPassActivity);
-        }
-        if (clicked == GoogleSignInActivity.class){
-            Intent GoogleSignInActivity = new Intent(getApplicationContext(),GoogleSignInActivity.class);
-            startActivity(GoogleSignInActivity);
-        }
-
-        //startActivity(new Intent(this, clicked));
-    }
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -168,7 +129,6 @@ public class GameSearch extends AppCompatActivity
         switchSound();
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -182,11 +142,12 @@ public class GameSearch extends AppCompatActivity
 
         //Theme song
         if (soundPref == true) {
-            AudioPlay.playAudio(this,R.raw.theme);
 
+          AudioPlay.playAudio(this,R.raw.theme);
         }
         else if (soundPref == false){
             AudioPlay.stopAudio();
+
         }
     }
 
@@ -239,8 +200,7 @@ public class GameSearch extends AppCompatActivity
 
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-            Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
-            startActivity(ToolsActivity);
+
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {
@@ -273,5 +233,30 @@ public class GameSearch extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int i = v.getId();
+        //Main Button IF
+        if (i == R.id.sound_toogle) {
+            Switch SoundSwitch = (Switch)findViewById(R.id.sound_toogle);
+            Boolean SoundSwitchState = SoundSwitch.isChecked();
+            if (SoundSwitchState == true) {
+                Toast.makeText(this, "Sound On",
+                        Toast.LENGTH_LONG).show();
+                SharedPreferences.Editor editor = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
+                editor.putBoolean("SoundState", true);
+                editor.commit();
+
+            }if(SoundSwitchState == false){
+                Toast.makeText(this, "Sound Off",
+                        Toast.LENGTH_LONG).show();
+                SharedPreferences.Editor editor = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
+                editor.putBoolean("SoundState", false);
+                editor.commit();
+            }
+        }
+
     }
 }

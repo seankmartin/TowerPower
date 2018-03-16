@@ -3,6 +3,8 @@ package com.adwitiya.cs7cs3.towerpower;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -67,7 +69,6 @@ public class FirebaseLogin extends AppCompatActivity
 
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
-
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -170,6 +171,27 @@ public class FirebaseLogin extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
+        switchSound();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AudioPlay.stopAudio();
+    }
+
+    private void switchSound(){
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.theme);
+        SharedPreferences soundPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
+        Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
+
+        //Theme song
+        if (soundPref == true) {
+           AudioPlay.playAudio(this,R.raw.theme);
+        }
+        else if (soundPref == false){
+            AudioPlay.stopAudio();
+        }
     }
 
     @Override
@@ -221,6 +243,8 @@ public class FirebaseLogin extends AppCompatActivity
 
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
+            Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
+            startActivity(ToolsActivity);
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {

@@ -3,8 +3,10 @@ package com.adwitiya.cs7cs3.towerpower;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -106,7 +108,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         //Get the positions from DB
         positionList = new ArrayList<>();
         retrieveMultiLocFromDB();
-
     }
 
     @SuppressWarnings( {"MissingPermission"})
@@ -198,6 +199,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     public void onPause() {
         super.onPause();
         mapView.onPause();
+        AudioPlay.stopAudio();
     }
 
     @Override
@@ -267,7 +269,23 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         mapView.onResume();
+        switchSound();
 
+    }
+
+
+    private void switchSound(){
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.theme);
+        SharedPreferences soundPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
+        Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
+
+        //Theme song
+        if (soundPref == true) {
+           AudioPlay.playAudio(this,R.raw.theme);
+        }
+        else if (soundPref == false){
+           AudioPlay.stopAudio();
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -295,6 +313,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             startActivity(HomeIntent);
         }else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
+            Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
+            startActivity(ToolsActivity);
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {

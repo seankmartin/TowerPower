@@ -3,6 +3,7 @@ package com.adwitiya.cs7cs3.towerpower;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -29,6 +30,7 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
+import com.adwitiya.cs7cs3.towerpower.AudioPlay;
 
 import org.w3c.dom.Text;
 
@@ -58,11 +60,12 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
-        //Theme song
-        final MediaPlayer mp = MediaPlayer.create(this,R.raw.theme);
-        mp.setLooping(true);
-        mp.start();
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AudioPlay.stopAudio();
 
     }
 
@@ -128,6 +131,21 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
+        switchSound();
+    }
+
+    private void switchSound(){
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.theme);
+        SharedPreferences soundPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
+        Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
+
+        //Theme song
+        if (soundPref == true) {
+          AudioPlay.playAudio(this,R.raw.theme);
+        }
+        else if (soundPref == false){
+            AudioPlay.stopAudio();
+        }
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -228,6 +246,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(LiveMap);
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
+            Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
+            startActivity(ToolsActivity);
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {

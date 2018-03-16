@@ -35,9 +35,11 @@
             android:theme="@style/AppTheme.Fullscreen" />
         <activity
             android:name=".GameSearch"
-            android:theme="@style/AppTheme.Fullscreen"
-            android:label= "@string/game_page">
-
+            android:label="@string/game_page"
+            android:theme="@style/AppTheme.Fullscreen"></activity>
+        <activity android:name=".ToolsActivity"
+            android:label="@string/tools_act"
+            android:theme="@style/AppTheme.Fullscreen">
         </activity>
     </application>
 
