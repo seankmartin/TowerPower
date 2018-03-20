@@ -72,7 +72,6 @@ import static java.lang.StrictMath.cos;
 import static java.lang.StrictMath.sin;
 
 public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener,LocationEngineListener, PermissionsListener {
-    View mDecorView;
     String MapBoxZoom;
     private MapView mapView;
     // variables for adding location layer

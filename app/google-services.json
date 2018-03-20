@@ -199,6 +199,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "294942122611-etu621afe7j3h3vnntig7di6f1p0234d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.adwitiya.cs7cs3.towerpower",
+            "certificate_hash": "fde764dd1ea7852b0bf92bc81307db6805c949a4"
+          }
+        },
+        {
           "client_id": "294942122611-4gt3epr8066rbncbcid4ee88q6nkejmt.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

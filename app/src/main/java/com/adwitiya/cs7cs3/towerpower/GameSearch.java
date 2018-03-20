@@ -4,11 +4,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -22,26 +26,45 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerMode;
+import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
+import com.mapbox.services.android.telemetry.location.LocationEngine;
+import com.mapbox.services.android.telemetry.location.LocationEngineListener;
+import com.mapbox.services.android.telemetry.location.LocationEnginePriority;
+import com.mapbox.services.android.telemetry.location.LostLocationEngine;
+import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
+import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import com.squareup.picasso.Picasso;
 
-public class GameSearch extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
-    View mDecorView;
-    private static final Class[] CLASSES = new Class[]{
-            EmailPasswordActivity.class,
-            GoogleSignInActivity.class
-    };
+import org.w3c.dom.Text;
 
-    private static final int[] DESCRIPTION_IDS = new int[] {
-            R.string.desc_emailpassword,
-            R.string.desc_google_sign_in
-    };
+import java.util.List;
+
+public class GameSearch extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener,View.OnClickListener,LocationListener,LocationEngineListener,PermissionsListener{
+
+
+    private FirebaseFirestore mDatabase;
+    private PermissionsManager permissionsManager;
+    private LocationLayerPlugin locationPlugin;
+    private LocationEngine locationEngine;
+    private Location originLocation;    private static final String TAG = LiveMaps.class.getSimpleName();
+    private MapView mapView;
+    private MapboxMap map;
+    String user_id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +84,27 @@ public class GameSearch extends AppCompatActivity
         // Code to check fire base Auth instance
         checkFirebaseAuth(navigationView);
 
+        //Firebase Database
+        FirebaseApp.initializeApp(this);
+        mDatabase = FirebaseFirestore.getInstance();
+        //Start of Mapbox Async Task
+        //This task needs to be finished before activating the Search Game Button
+        Mapbox.getInstance(this,getString(R.string.mapbox_key));
+        mapView = (MapView)findViewById(R.id.map_game);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                map = mapboxMap;
+                enableLocationPlugin();
+                }
+        });
+        //Make Search Button Disabled
+        Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+        SearchBtn.setEnabled(false);
+        findViewById(R.id.SearchGame).setOnClickListener(GameSearch.this);
+
+
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -71,6 +115,7 @@ public class GameSearch extends AppCompatActivity
             String user_name = user.getDisplayName();
             String email = user.getEmail();
             Uri photoUrl = user.getPhotoUrl();
+            user_id = user.getUid();
 
             // Check if user's email is verified
             boolean emailVerified = user.isEmailVerified();
@@ -98,6 +143,68 @@ public class GameSearch extends AppCompatActivity
             ProfilePic.setImageResource(R.drawable.def_icon);
         }
 
+    }
+
+    @Override
+    public void onClick(View view) {
+        int BtnID = view.getId();
+        if (BtnID == R.id.SearchGame) {
+            TextView tvu = (TextView) findViewById(R.id.user_name);
+            String user_name = "";
+            if (tvu !=null){
+                user_name = tvu.getText().toString();
+            }
+            TextView tvemail = (TextView) findViewById(R.id.user_email);
+            String user_email = "";
+            if (tvemail !=null){
+                user_email = tvemail.getText().toString();
+            }
+            UserMatchingInfo user = new UserMatchingInfo(new PositionHelper(originLocation.getLatitude(), originLocation.getLongitude()),
+                    false, user_id, user_email, user_name, "dodgy", 0);
+            Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
+            mDatabase.collection("matchmaking").add(user);
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null) {
+            originLocation = location;
+            //Whenever we get the location we enable the button
+            Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+            SearchBtn.setEnabled(true);
+            locationEngine.removeLocationEngineListener(this);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
+
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        //
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            enableLocationPlugin();
+        } else {
+            finish();
+        }
     }
 
     public static class MyArrayAdapter extends ArrayAdapter<Class> {
@@ -135,17 +242,6 @@ public class GameSearch extends AppCompatActivity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Class clicked = CLASSES[position];
-        if (clicked == EmailPasswordActivity.class){
-            Intent EmailPassActivity = new Intent(getApplicationContext(),EmailPasswordActivity.class);
-            startActivity(EmailPassActivity);
-        }
-        if (clicked == GoogleSignInActivity.class){
-            Intent GoogleSignInActivity = new Intent(getApplicationContext(),GoogleSignInActivity.class);
-            startActivity(GoogleSignInActivity);
-        }
-
-        //startActivity(new Intent(this, clicked));
     }
 
     @Override
@@ -170,6 +266,7 @@ public class GameSearch extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        mapView.onPause();
         AudioPlay.stopAudio();
     }
 
@@ -271,5 +368,78 @@ public class GameSearch extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    @SuppressWarnings( {"MissingPermission"})
+    public void onConnected() {
+        locationEngine.requestLocationUpdates();
+    }
+    @SuppressWarnings( {"MissingPermission"})
+    private void enableLocationPlugin() {
+        // Check if permissions are enabled and if not request
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            // Create an instance of LOST location engine
+            initializeLocationEngine();
+
+            locationPlugin = new LocationLayerPlugin(mapView, map, locationEngine);
+            locationPlugin.setLocationLayerEnabled(LocationLayerMode.TRACKING);
+        } else {
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(this);
+        }
+    }
+    @SuppressWarnings( {"MissingPermission"})
+    private void initializeLocationEngine() {
+        locationEngine = new LostLocationEngine(this);
+        locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
+        locationEngine.activate();
+
+        Location lastLocation = locationEngine.getLastLocation();
+        if (lastLocation != null) {
+            originLocation = lastLocation;
+            Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+            SearchBtn.setEnabled(true);
+        } else {
+            locationEngine.addLocationEngineListener(this);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    @SuppressWarnings( {"MissingPermission"})
+    protected void onStart() {
+        super.onStart();
+        if (locationEngine != null) {
+            locationEngine.requestLocationUpdates();
+        }
+        if (locationPlugin != null) {
+            locationPlugin.onStart();
+        }
+        mapView.onStart();
+
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (locationEngine != null) {
+            locationEngine.removeLocationUpdates();
+        }
+        if (locationPlugin != null) {
+            locationPlugin.onStop();
+        }
+        mapView.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+        if (locationEngine != null) {
+            locationEngine.deactivate();
+        }
     }
 }
