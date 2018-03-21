@@ -30,6 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -159,10 +160,16 @@ public class GameSearch extends AppCompatActivity
             if (tvemail !=null){
                 user_email = tvemail.getText().toString();
             }
-            UserMatchingInfo user = new UserMatchingInfo(new PositionHelper(originLocation.getLatitude(), originLocation.getLongitude()),
-                    false, user_id, user_email, user_name, "dodgy", 0);
-            Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
-            mDatabase.collection("matchmaking").add(user);
+
+            if ( user_name == getText(R.string.def_user) && (user_email == getText(R.string.def_email))){
+                Toast.makeText(this, "Please Sign-in before initiating a Game Search !!",
+                        Toast.LENGTH_LONG).show();
+            }else{
+                UserMatchingInfo user = new UserMatchingInfo(new PositionHelper(originLocation.getLatitude(), originLocation.getLongitude()),
+                        false, user_id, user_email, user_name, "dodgy", 0);
+                //Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
+                mDatabase.collection("matchmaking").add(user);
+            }
         }
     }
 

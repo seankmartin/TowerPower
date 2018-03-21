@@ -75,7 +75,7 @@
 
     <string name="facebook_status_fmt">Facebook User: %s</string>
     <string name="facebook_title_text">Facebook Login</string>
-    <string name="mapbox_key">pk.eyJ1IjoiYW5hbnQxOTk0IiwiYSI6ImNqZXBzdzF2ZjAwMncycXB0enZ6ZDR6dXgifQ.kaxLDJTeiJEZFQ1xC-WLUA</string>
+    <string name="mapbox_key">pk.eyJ1IjoiZ2F0dG9zIiwiYSI6ImNqZWg3OHduaTBjYm8yd282ZTltaWQ1ZzkifQ.NqvoNGKypQNgXjAgvK4geg</string>
 
     <string name="emailpassword_status_fmt">Email User: %1$s (verified: %2$b)</string>
     <string name="emailpassword_title_text">Email and Password</string>

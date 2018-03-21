@@ -11,7 +11,7 @@
 
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/map"
-        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/dark-v9"
+        mapbox:mapbox_styleUrl="mapbox://styles/gattos/cjf1ei0qt02502rjt1clp2as7"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

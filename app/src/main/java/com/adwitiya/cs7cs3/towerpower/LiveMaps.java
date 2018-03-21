@@ -1,6 +1,7 @@
 package com.adwitiya.cs7cs3.towerpower;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -36,6 +38,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -45,7 +48,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.InfoWindow;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -80,11 +86,12 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     private LocationLayerPlugin locationPlugin;
     private LocationEngine locationEngine;
     private Location originLocation;
-    private FirebaseFirestore mDatabase;
     private List<PositionHelper> positionList;
     private static final String TAG = LiveMaps.class.getSimpleName();
     private GoogleApiClient googleApiClient;
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+    private FirebaseFirestore mDatabase;
+    private LocationsFull temp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,7 +215,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (lastLocation != null) {
             originLocation = lastLocation;
             setCameraPosition(lastLocation);
-            drawCircle(map, new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude()), 5, 500);
+            drawCircle(map, new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude()), Color.BLACK, 500);
         } else {
             locationEngine.addLocationEngineListener(this);
         }
@@ -248,6 +255,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (location != null) {
             originLocation = location;
             setCameraPosition(location);
+            drawCircle(map, new LatLng(location.getLatitude(),location.getLongitude()), Color.BLACK, 500);
             locationEngine.removeLocationEngineListener(this);
         }
     }
@@ -465,13 +473,15 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 if (task.isSuccessful()) {
                     for (DocumentSnapshot doc : task.getResult()) {
                         if (doc != null && doc.exists()) {
+                            String docID = doc.getId();
                             Map<String, Object> map = doc.getData();
-                            double lat=0, lon=0;
+                            double lat=-1, lon=-1;
                             Object tmp =  map.get("latitude");
                             if (tmp!=null) lat = (double) tmp;
                             tmp =  map.get("longitude");
                             if (tmp!=null) lon = (double) tmp;
                             positionList.add(new PositionHelper(lat,lon));
+                            if(tmp!=null) temp = new LocationsFull(lat,lon);
 
 
                             Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
@@ -483,8 +493,10 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                     tmp =  locationMap.get("lng");
                                     if (tmp!=null) lon = (double) tmp;
                                     positionList.add(new PositionHelper(lat,lon));
+                                    if(tmp!=null) temp.addPosition(lat,lon);
                                 }
                             }
+                            //if(temp!=null) mDatabase.collection("locations").document(docID).update("generated_locations.locations", new LatLng(53.3498053, -6.2603097));   //).set(temp, SetOptions.merge());
 
                         }
                     }
@@ -497,12 +509,29 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                 snip.toString();
                                 mapboxMap.addMarker(new MarkerOptions()
                                         .position(new LatLng(position.getLatitude(), position.getLongitude()))
-
                                         .title(getString(R.string.map_title))
                                         .snippet(snip));
                             }
-
                             map = mapboxMap;
+                            //List<Marker> markers = map.getMarkers();
+                            // handle onClick of Markers
+                            map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+                                @Override
+                                public boolean onMarkerClick(@NonNull Marker marker) {
+
+                                    LatLng currentMarker = marker.getPosition();
+                                    LatLng myPosition = new LatLng(originLocation.getLatitude(), originLocation.getLongitude());
+                                    double distance = myPosition.distanceTo(currentMarker);
+                                    if (distance >= 200){
+                                        Toast.makeText(LiveMaps.this, "Collectible out of reach!",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                    Toast.makeText(LiveMaps.this, "Collected",
+                                            Toast.LENGTH_LONG).show();
+                                    return false;
+                                }
+                            });
+
                             enableLocationPlugin();
                         }
 
@@ -514,8 +543,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
     public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
         PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.WHITE);
-        polylineOptions.width(0.5f); // change the line width here
+        polylineOptions.color(Color.BLACK);
+        polylineOptions.width(3.0f); // change the line width here
         polylineOptions.addAll(getCirclePoints(position, radiusMeters));
         map.addPolyline(polylineOptions);
     }
@@ -544,6 +573,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         polygons.add(polygons.get(0));
         return polygons;
     }
+
 }
 
 
