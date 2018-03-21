@@ -25,13 +25,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
 
 
 import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+                    GameCreateAdapter.OnGameSearchInitiatedListner{
     View mDecorView;
     private ImageView CollectIV;
     private TextView CollectTV;
@@ -41,9 +46,71 @@ public class MainActivity extends AppCompatActivity
     private TextView DefendTV;
     private TextView group5;
     private FirebaseAuth mAuth;
+
+    // TODO: Handler Stuff
+    private Query mQuery;
+    private FirebaseFirestore mFirestore;
+    private GameCreateAdapter mAdapter;
+    private static final int LIMIT = 50;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Start sign in if necessary
+        /*
+        if (shouldStartSignIn()) {
+            startSignIn();
+            return;
+        }*/
+
+        // Apply filters
+        //onFilter(mViewModel.getFilters());
+
+        // Start listening for Firestore updates
+/*        if (mAdapter != null) {
+            mAdapter.startListening();
+        }*/
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+/*        if (mAdapter != null) {
+            mAdapter.stopListening();
+        }*/
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mFirestore = FirebaseFirestore.getInstance();
+
+        // TODO: Handler Stuff
+        mQuery = mFirestore.collection("users");
+
+
+        // TODO: Handler Stuff
+        mAdapter = new GameCreateAdapter(mQuery, this) {
+            @Override
+            protected void onDataChanged() {
+                // Show/hide content if the query returns empty.
+                System.out.println("OnDataChange Called");
+                if (getItemCount() == 0) {
+
+                } else {
+
+                }
+            }
+
+            @Override
+            protected void onError(FirebaseFirestoreException e) {
+                // Show a snackbar on errors
+                Snackbar.make(findViewById(android.R.id.content),
+                        "Error: check logs for info.", Snackbar.LENGTH_LONG).show();
+            }
+        };
+
         //hideSystemUI();
         setContentView(R.layout.activity_main);
         setAnimation(this);
@@ -56,6 +123,17 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
+    }
+
+    @Override
+    public void OnGameSearchInitiated(DocumentSnapshot restaurant) {
+        // TODO: Implement Something
+        // Go to the details page for the selected restaurant
+        //Intent intent = new Intent(this, RestaurantDetailActivity.class);
+        //intent.putExtra(RestaurantDetailActivity.KEY_RESTAURANT_ID, restaurant.getId());
+
+        //startActivity(intent);
+        //overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left);
     }
 
     @Override

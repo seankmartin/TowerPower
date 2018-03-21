@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
@@ -34,7 +35,10 @@ import android.widget.TextView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -54,7 +58,13 @@ import org.w3c.dom.Text;
 import java.util.List;
 
 public class GameSearch extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener,View.OnClickListener,LocationListener,LocationEngineListener,PermissionsListener{
+        implements NavigationView.OnNavigationItemSelectedListener,
+        AdapterView.OnItemClickListener,
+        View.OnClickListener,
+        LocationListener,
+        LocationEngineListener,
+        PermissionsListener,
+        GameCreateAdapter.OnGameSearchInitiatedListner{
 
 
     private FirebaseFirestore mDatabase;
@@ -65,6 +75,12 @@ public class GameSearch extends AppCompatActivity
     private MapView mapView;
     private MapboxMap map;
     String user_id;
+
+    // TODO: Handler Stuff
+    private Query mQuery;
+    private GameCreateAdapter mAdapter;
+    private static final int LIMIT = 50;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,7 +120,39 @@ public class GameSearch extends AppCompatActivity
         SearchBtn.setEnabled(false);
         findViewById(R.id.SearchGame).setOnClickListener(GameSearch.this);
 
+        mQuery = mDatabase.collection("users");
 
+        // TODO: Handler Stuff
+        mAdapter = new GameCreateAdapter(mQuery, this) {
+            @Override
+            protected void onDataChanged() {
+                // Show/hide content if the query returns empty.
+                System.out.println("OnDataChange Called");
+                if (getItemCount() == 0) {
+
+                } else {
+
+                }
+            }
+
+            @Override
+            protected void onError(FirebaseFirestoreException e) {
+                // Show a snackbar on errors
+                Snackbar.make(findViewById(android.R.id.content),
+                        "Error: check logs for info.", Snackbar.LENGTH_LONG).show();
+            }
+        };
+    }
+
+    @Override
+    public void OnGameSearchInitiated(DocumentSnapshot restaurant) {
+        // TODO: Implement Something
+        // Go to the details page for the selected restaurant
+        //Intent intent = new Intent(this, RestaurantDetailActivity.class);
+        //intent.putExtra(RestaurantDetailActivity.KEY_RESTAURANT_ID, restaurant.getId());
+
+        //startActivity(intent);
+        //overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left);
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -419,12 +467,22 @@ public class GameSearch extends AppCompatActivity
         }
         mapView.onStart();
 
+        super.onStop();
+        if (mAdapter != null) {
+            mAdapter.startListening();
+        }
+
     }
 
 
     @Override
     public void onStop() {
         super.onStop();
+
+        if (mAdapter != null) {
+            mAdapter.stopListening();
+        }
+
         if (locationEngine != null) {
             locationEngine.removeLocationUpdates();
         }
