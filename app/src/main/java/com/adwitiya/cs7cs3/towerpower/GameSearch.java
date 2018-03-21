@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
@@ -34,7 +35,11 @@ import android.widget.TextView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -52,6 +57,8 @@ import com.squareup.picasso.Picasso;
 import org.w3c.dom.Text;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class GameSearch extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener,View.OnClickListener,LocationListener,LocationEngineListener,PermissionsListener{
@@ -61,10 +68,13 @@ public class GameSearch extends AppCompatActivity
     private PermissionsManager permissionsManager;
     private LocationLayerPlugin locationPlugin;
     private LocationEngine locationEngine;
-    private Location originLocation;    private static final String TAG = LiveMaps.class.getSimpleName();
+    private Location originLocation;
+    private static final String TAG = LiveMaps.class.getSimpleName();
     private MapView mapView;
     private MapboxMap map;
     String user_id;
+    private DocumentReference userDocRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,22 +99,31 @@ public class GameSearch extends AppCompatActivity
         mDatabase = FirebaseFirestore.getInstance();
         //Start of Mapbox Async Task
         //This task needs to be finished before activating the Search Game Button
-        Mapbox.getInstance(this,getString(R.string.mapbox_key));
-        mapView = (MapView)findViewById(R.id.map_game);
+        Mapbox.getInstance(this, getString(R.string.mapbox_key));
+        mapView = (MapView) findViewById(R.id.map_game);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
                 enableLocationPlugin();
-                }
+            }
         });
         //Make Search Button Disabled
-        Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+        Button SearchBtn = (Button) findViewById(R.id.SearchGame);
         SearchBtn.setEnabled(false);
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "Tokyo");
+
+        //TODO, fix the need to do this, the best thing would probably be to not allow access to this activity unless you are logged in
+        if(user_id == null) {
+            user_id = "test";
+        }
+        //TODO, remove this, the user should get a document when they log in for the first time
+        mDatabase.collection("users").document(user_id).set(data);
+        userDocRef = mDatabase.collection("users").document(user_id);
+
         findViewById(R.id.SearchGame).setOnClickListener(GameSearch.this);
-
-
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -418,7 +437,22 @@ public class GameSearch extends AppCompatActivity
             locationPlugin.onStart();
         }
         mapView.onStart();
+        userDocRef.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
 
+                if (snapshot != null && snapshot.exists()) {
+                    Log.d(TAG, "Current data: " + snapshot.getData());
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+            }
+        });
     }
 
 
