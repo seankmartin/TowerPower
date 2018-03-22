@@ -1,5 +1,7 @@
 package com.adwitiya.cs7cs3.towerpower;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
 /**
  * Created by stackoverflow on 14/03/2018.
  */
@@ -18,7 +20,6 @@ public class PositionHelper {
     public PositionHelper(double latitude, double longitude){
         this.longitude = longitude;
         this.latitude = latitude;
-
     }
 
     public double getLatitude() {
@@ -35,6 +36,10 @@ public class PositionHelper {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public LatLng toLatLng(){
+        return new LatLng( getLatitude(), getLongitude());
     }
 
     public String toString(){

@@ -4,7 +4,9 @@ package com.adwitiya.cs7cs3.towerpower;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by stackoverflow on 21/03/2018.
@@ -13,18 +15,19 @@ import java.util.List;
 public class LocationsFull {
     private double latitude;
     private double longitude;
-    ArrayList<LatLng> generated_locations;
+    Map<String, Object> generated_locations;
+   // ArrayList<LatLng> generated_locations;
 
     public LocationsFull(){
         this.latitude = 0;
         this.longitude = 0;
-        this.generated_locations = new ArrayList<LatLng>();
+        this.generated_locations = new HashMap<>();
     }
 
     public LocationsFull(double latitude, double longitude){
         this.longitude = longitude;
         this.latitude = latitude;
-        this.generated_locations = new ArrayList<LatLng>();
+        this.generated_locations = new HashMap<>();
     }
 
     public double getLatitude() {
@@ -43,24 +46,38 @@ public class LocationsFull {
         this.longitude = longitude;
     }
 
-    public List<LatLng> getGenerated_locations() {
+    public Map<String, Object> getGenerated_locations() {
         return generated_locations;
     }
 
     public void addPosition(double lat, double lon){
-        this.generated_locations.add( new LatLng(lat,lon) );
+        int i = this.getGenerated_locations().size();
+        String index = "location"+i;
+        this.generated_locations.put( index, new PositionHelper(lat,lon) );
     }
 
-    public void deletePosition(double lat, double lon){
+    public String deletePosition(double lat, double lon){
         int i=0;
-        for (LatLng pos : this.generated_locations){
-            if (pos.getLatitude() == lat && pos.getLongitude() == lon) break;
+        String finalKey=null;
+        for ( String key : this.getGenerated_locations().keySet() ){
+          //  key = "location"+i;
+            PositionHelper pos = (PositionHelper) this.getGenerated_locations().get(key);
+            if (pos.getLatitude() == lat && pos.getLongitude() == lon) {
+                finalKey = key;
+                break;
+            }
             i++;
         }
-        this.generated_locations.remove(i);
+        this.generated_locations.remove(finalKey);
+        return finalKey;
+    }
+
+    public LatLng toLatLng(){
+        return new LatLng( getLatitude(), getLongitude());
     }
 
     public String toString(){
-        return "Latitude: " + getLatitude() + "\nLongitude: " + getLongitude();
+       // return "Latitude: " + getLatitude() + "\nLongitude: " + getLongitude();
+        return this.getGenerated_locations().entrySet().toString();
     }
 }

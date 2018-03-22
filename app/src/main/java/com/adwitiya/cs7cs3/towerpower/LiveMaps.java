@@ -1,7 +1,6 @@
 package com.adwitiya.cs7cs3.towerpower;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -20,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,23 +38,23 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.InfoWindow;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
@@ -91,7 +91,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     private GoogleApiClient googleApiClient;
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
     private FirebaseFirestore mDatabase;
-    private LocationsFull temp;
+    private LocationsFull gameLocations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -466,7 +466,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
     private void retrieveMultiLocFromDB() {
-        CollectionReference colRef = mDatabase.collection("locations");
+        CollectionReference colRef = mDatabase.collection("teams");
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -474,37 +474,54 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                     for (DocumentSnapshot doc : task.getResult()) {
                         if (doc != null && doc.exists()) {
                             String docID = doc.getId();
-                            Map<String, Object> map = doc.getData();
-                            double lat=-1, lon=-1;
-                            Object tmp =  map.get("latitude");
-                            if (tmp!=null) lat = (double) tmp;
-                            tmp =  map.get("longitude");
-                            if (tmp!=null) lon = (double) tmp;
-                            positionList.add(new PositionHelper(lat,lon));
-                            if(tmp!=null) temp = new LocationsFull(lat,lon);
+                            if (docID.compareTo("leinster")==0 ) {
+                                Map<String, Object> map = doc.getData();
+                                double lat = -1, lon = -1;
+                                Object tmp = map.get("latitude");
+                                if (tmp != null) lat = (double) tmp;
+                                tmp = map.get("longitude");
+                                if (tmp != null) lon = (double) tmp;
+                                positionList.add(new PositionHelper(lat, lon));
+                                if (tmp != null) gameLocations = new LocationsFull(lat, lon);
 
 
-                            Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
-                            if (map2!=null){
-                                ArrayList<Map<String, Object>> map3 = (ArrayList<Map<String, Object>>) map2.get("locations");
-                                for (Map<String, Object> locationMap: map3) {
-                                    tmp =  locationMap.get("lat");
-                                    if (tmp!=null) lat = (double) tmp;
-                                    tmp =  locationMap.get("lng");
-                                    if (tmp!=null) lon = (double) tmp;
-                                    positionList.add(new PositionHelper(lat,lon));
-                                    if(tmp!=null) temp.addPosition(lat,lon);
+                                Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
+                                if (map2 != null) {
+                                    //ArrayList<Map<String, Object>> map3 = (ArrayList<Map<String, Object>>) map2.get("locations");
+                                    //for (Map<String, Object> locationMap: map3) {
+                                    int i;
+                                    map2 = (Map<String, Object>) map2;
+                                    //for (i = 0; i < map2.size(); i++) {
+                                    for ( String key : map2.keySet() ){
+                                       // String name = "location" + i;
+                                        Map<String, Object> locationMap = (Map<String, Object>) map2.get(key);
+                                        tmp = locationMap.get("latitude");
+                                        if (tmp != null) lat = (double) tmp;
+                                        tmp = locationMap.get("longitude");
+                                        if (tmp != null) lon = (double) tmp;
+                                        positionList.add(new PositionHelper(lat, lon));
+                                        if (tmp != null) gameLocations.addPosition(lat, lon);
+                                    }
                                 }
+                                // Get a new write batch
+                                WriteBatch batch = mDatabase.batch();
+                                DocumentReference ref = mDatabase.collection("teams").document(docID);
+                                batch.update(ref, "generated_locations", FieldValue.delete());
+                                //      Map<String, ArrayList<LatLng>> Tmap = new HashMap<>();
+                                //     Tmap.put("generated_locations",gameLocations.generated_locations);
+                                batch.set(ref, gameLocations, SetOptions.merge());
+                                // Commit the batch
+                                batch.commit();
+                                Log.d(TAG, gameLocations.toString());
+                                // mDatabase.collection("gameLocations").document("AJ70TP5oc7BwQUYiiSYH").update("generated_locations", FieldValue.delete());   //).set(gameLocations, SetOptions.merge());
                             }
-                            //if(temp!=null) mDatabase.collection("locations").document(docID).update("generated_locations.locations", new LatLng(53.3498053, -6.2603097));   //).set(temp, SetOptions.merge());
-
                         }
                     }
                     mapView.getMapAsync(new OnMapReadyCallback() {
                         @Override
                         public void onMapReady(MapboxMap mapboxMap) {
-                            for (PositionHelper position : positionList ){
-
+                            for (String key : gameLocations.getGenerated_locations().keySet() ){
+                                PositionHelper position = (PositionHelper) gameLocations.getGenerated_locations().get(key);
                                 String snip = ""+position.getLatitude();
                                 snip.toString();
                                 mapboxMap.addMarker(new MarkerOptions()
@@ -526,8 +543,24 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                         Toast.makeText(LiveMaps.this, "Collectible out of reach!",
                                                 Toast.LENGTH_LONG).show();
                                     }
-                                    Toast.makeText(LiveMaps.this, "Collected",
-                                            Toast.LENGTH_LONG).show();
+                                    else {
+                                        Toast.makeText(LiveMaps.this, "Collected",
+                                                Toast.LENGTH_LONG).show();
+                                        LatLng pos = marker.getPosition();
+                                        String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
+
+
+                                      //  WriteBatch batch = mDatabase.batch();
+                                        DocumentReference ref =  mDatabase.collection("teams").document("leinster");
+                                        ref.update("generated_locations."+deletedKey, FieldValue.delete());
+                                       // batch.update(ref,"generated_locations", FieldValue.delete());
+                             //           Map<String, ArrayList<LatLng>> Tmap = new HashMap<>();
+                           //             Tmap.put("generated_locations",gameLocations.generated_locations);
+                                        //batch.set(ref, gameLocations, SetOptions.merge());
+                                        // Commit the batch
+                                        //batch.commit();
+                                     marker.remove();
+                                    }
                                     return false;
                                 }
                             });
