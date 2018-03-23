@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
@@ -32,10 +33,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -53,6 +61,7 @@ import com.squareup.picasso.Picasso;
 import org.w3c.dom.Text;
 
 import java.util.List;
+import java.util.Map;
 
 public class GameSearch extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener,View.OnClickListener,LocationListener,LocationEngineListener,PermissionsListener{
@@ -66,6 +75,10 @@ public class GameSearch extends AppCompatActivity
     private MapView mapView;
     private MapboxMap map;
     String user_id;
+    private String teamID;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,7 +118,13 @@ public class GameSearch extends AppCompatActivity
         SearchBtn.setEnabled(false);
         findViewById(R.id.SearchGame).setOnClickListener(GameSearch.this);
 
-
+        //Disable some buttons
+        Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+        acceptBtn.setEnabled(false);
+        acceptBtn.setOnClickListener(GameSearch.this);
+        Button refuseBtn = (Button)findViewById(R.id.declineBtn);
+        refuseBtn.setEnabled(false);
+        refuseBtn.setOnClickListener(GameSearch.this);
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -145,6 +164,35 @@ public class GameSearch extends AppCompatActivity
         }
 
     }
+    private void fillYourInfo(){
+        // Code to check fire base Auth instance
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // Name, email address, and profile photo Url
+            String user_name = user.getDisplayName();
+            String email = user.getEmail();
+            Uri photoUrl = user.getPhotoUrl();
+
+            // Check if user's email is verified
+            boolean emailVerified = user.isEmailVerified();
+
+            // The user's ID, unique to the Firebase project. Do NOT use this value to
+            // authenticate with your backend server, if you have one. Use
+            // FirebaseUser.getToken() instead.
+            TextView UserName = (TextView) findViewById(R.id.playername1);
+            ImageView ProfilePic = (ImageView) findViewById(R.id.playerimg1);
+            UserName.setText(user_name);
+            if (photoUrl != null) {
+                Picasso.with(this).load(photoUrl).into(ProfilePic);
+            }
+        }
+        if (user == null){
+            TextView UserName = (TextView) findViewById(R.id.playername1);
+            ImageView ProfilePic = (ImageView) findViewById(R.id.playerimg1);
+            UserName.setText(getText(R.string.def_user));
+            ProfilePic.setImageResource(R.drawable.def_icon);
+        }
+    }
 
     @Override
     public void onClick(View view) {
@@ -165,13 +213,91 @@ public class GameSearch extends AppCompatActivity
                 Toast.makeText(this, "Please Sign-in before initiating a Game Search !!",
                         Toast.LENGTH_LONG).show();
             }else{
+                //Fill Player Profile Infos
+                fillYourInfo();
                 UserMatchingInfo user = new UserMatchingInfo(new PositionHelper(originLocation.getLatitude(), originLocation.getLongitude()),
-                        false, user_id, user_email, user_name, "dodgy", 0);
+                        false, user_id, user_email, user_name, "random", 0);
                 //Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
-                mDatabase.collection("matchmaking").add(user);
+                mDatabase.collection("matchmaking").document(user_id).set(user);
+                Button searchBtn = (Button)findViewById(R.id.SearchGame);
+                searchBtn.setEnabled(false);
+
+
+                DocumentReference userRef = mDatabase.collection("users").document(user_id);
+                userRef.addSnapshotListener(GameSearch.this, new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            //Log.d(TAG, "Current data: " + snapshot.getData());
+                            Map<String, Object> map = snapshot.getData();
+                            Object tmp = map.get("team_id");
+                            if (tmp != null) teamID = (String) tmp;
+                            //Get Team ID and Store it to SharedPreference
+                            SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
+                            editor_team.putString("TeamID",teamID);
+                            editor_team.commit();
+
+                            getTeam();
+
+                            Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+                            acceptBtn.setEnabled(true);
+                        } else {
+                            Log.d(TAG, "Current data: null");
+                        }
+                    }
+                });
             }
         }
+        else if (BtnID == R.id.acceptBtn){
+            Intent gameIntent = new Intent(getApplicationContext(),LiveMaps.class);
+            startActivity(gameIntent);
+            Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+            acceptBtn.setEnabled(false);
+        }
     }
+
+    public void getTeam(){
+        DocumentReference teamRef = mDatabase.collection("teams").document(teamID);
+        teamRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document != null && document.exists()) {
+                        Map<String, Object> map = document.getData();
+                        int i;
+                        for (i=0; i<3; i++) {
+                            Object tmp = map.get("user"+i);
+                            Map<String, Object> user = null;
+                            if (tmp != null) user = (Map<String, Object>) tmp;
+                            tmp = user.get("userID");
+                            String otherUserID = "";
+                            String otherUserRole = "";
+                            if (tmp != null) otherUserID = (String) tmp;
+                            if (otherUserID != user_id) {
+                                tmp = user.get("role");
+                                if (tmp != null) otherUserRole = (String) tmp;
+                            }
+                            Toast.makeText(GameSearch.this, "User: "+ otherUserID + " Role: "+otherUserRole, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+
+
 
     @Override
     public void onLocationChanged(Location location) {
@@ -222,7 +348,6 @@ public class GameSearch extends AppCompatActivity
 
         public MyArrayAdapter(Context context, int resource, Class[] objects) {
             super(context, resource, objects);
-
             mContext = context;
             mClasses = objects;
         }

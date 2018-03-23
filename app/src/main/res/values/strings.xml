@@ -17,6 +17,9 @@
     <string name="let_text">Letters</string>
     <string name="let_text_def">No Letters Collected</string>
     <string name="mat_text_def">No Materials Collected</string>
+    <string name="def_role">Random</string>
+    <string name="btn_confirm">Confirm</string>
+    <string name="btn_refuse">Refuse</string>
 
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>

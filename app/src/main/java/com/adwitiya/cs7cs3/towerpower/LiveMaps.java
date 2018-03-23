@@ -103,6 +103,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
     private FirebaseFirestore mDatabase;
     private LocationsFull gameLocations;
+    private FirebaseUser user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -468,7 +469,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
     private void checkFirebaseAuth(NavigationView view){
         // Code to check fire base Auth instance
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // Name, email address, and profile photo Url
             String user_name = user.getDisplayName();
@@ -502,103 +503,114 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
     private void retrieveMultiLocFromDB() {
-        CollectionReference colRef = mDatabase.collection("teams").document("leinster2").collection("games");
-        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (DocumentSnapshot doc : task.getResult()) {
-                        if (doc != null && doc.exists()) {
-                            String docID = doc.getId();
-                            if (docID.compareTo("leinster")==0 ) {
-                                Map<String, Object> map = doc.getData();
-                                double lat = -1, lon = -1;
-                                Object tmp = map.get("latitude");
-                                if (tmp != null) lat = (double) tmp;
-                                tmp = map.get("longitude");
-                                if (tmp != null) lon = (double) tmp;
-                                positionList.add(new PositionHelper(lat, lon));
-                                if (tmp != null) gameLocations = new LocationsFull(lat, lon);
+        //mDatabase.collection("teams").document()
+        String notFoundMsg = "Team not found";
+        SharedPreferences TeamPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
+        String teamID = TeamPrefs.getString("TeamID", notFoundMsg);
+
+        if (teamID.compareTo(notFoundMsg)==0){
+            Toast.makeText(LiveMaps.this, notFoundMsg,
+                    Toast.LENGTH_LONG).show();
+        }
+        else {
+            CollectionReference colRef = mDatabase.collection("teams").document("leinster2").collection("games");
+            colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            if (doc != null && doc.exists()) {
+                                String docID = doc.getId();
+                                if (docID.compareTo("leinster")==0 ) {
+                                    Map<String, Object> map = doc.getData();
+                                    double lat = -1, lon = -1;
+                                    Object tmp = map.get("latitude");
+                                    if (tmp != null) lat = (double) tmp;
+                                    tmp = map.get("longitude");
+                                    if (tmp != null) lon = (double) tmp;
+                                    positionList.add(new PositionHelper(lat, lon));
+                                    if (tmp != null) gameLocations = new LocationsFull(lat, lon);
 
 
-                                Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
-                                if (map2 != null) {
-                                    //ArrayList<Map<String, Object>> map3 = (ArrayList<Map<String, Object>>) map2.get("locations");
-                                    //for (Map<String, Object> locationMap: map3) {
-                                    int i;
-                                    map2 = (Map<String, Object>) map2;
-                                    //for (i = 0; i < map2.size(); i++) {
-                                    for ( String key : map2.keySet() ){
-                                       // String name = "location" + i;
-                                        Map<String, Object> locationMap = (Map<String, Object>) map2.get(key);
-                                        tmp = locationMap.get("latitude");
-                                        if (tmp != null) lat = (double) tmp;
-                                        tmp = locationMap.get("longitude");
-                                        if (tmp != null) lon = (double) tmp;
-                                       positionList.add(new PositionHelper(lat, lon));
-                                        if (tmp != null) gameLocations.addPosition(key, lat, lon);
+                                    Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
+                                    if (map2 != null) {
+                                        //ArrayList<Map<String, Object>> map3 = (ArrayList<Map<String, Object>>) map2.get("locations");
+                                        //for (Map<String, Object> locationMap: map3) {
+                                        int i;
+                                        map2 = (Map<String, Object>) map2;
+                                        //for (i = 0; i < map2.size(); i++) {
+                                        for ( String key : map2.keySet() ){
+                                           // String name = "location" + i;
+                                            Map<String, Object> locationMap = (Map<String, Object>) map2.get(key);
+                                            tmp = locationMap.get("latitude");
+                                            if (tmp != null) lat = (double) tmp;
+                                            tmp = locationMap.get("longitude");
+                                            if (tmp != null) lon = (double) tmp;
+                                           positionList.add(new PositionHelper(lat, lon));
+                                            if (tmp != null) gameLocations.addPosition(key, lat, lon);
+                                        }
                                     }
+                                    // Get a new write batch
+                                    WriteBatch batch = mDatabase.batch();
+                                    DocumentReference ref = mDatabase.collection("teams").document(docID);
+                                    batch.update(ref, "generated_locations", FieldValue.delete());
+                                    //      Map<String, ArrayList<LatLng>> Tmap = new HashMap<>();
+                                    //     Tmap.put("generated_locations",gameLocations.generated_locations);
+                                    batch.set(ref, gameLocations, SetOptions.merge());
+                                    // Commit the batch
+                                    batch.commit();
+                                    Log.d(TAG, gameLocations.toString());
+                                    // mDatabase.collection("gameLocations").document("AJ70TP5oc7BwQUYiiSYH").update("generated_locations", FieldValue.delete());   //).set(gameLocations, SetOptions.merge());
                                 }
-                                // Get a new write batch
-                                WriteBatch batch = mDatabase.batch();
-                                DocumentReference ref = mDatabase.collection("teams").document(docID);
-                                batch.update(ref, "generated_locations", FieldValue.delete());
-                                //      Map<String, ArrayList<LatLng>> Tmap = new HashMap<>();
-                                //     Tmap.put("generated_locations",gameLocations.generated_locations);
-                                batch.set(ref, gameLocations, SetOptions.merge());
-                                // Commit the batch
-                                batch.commit();
-                                Log.d(TAG, gameLocations.toString());
-                                // mDatabase.collection("gameLocations").document("AJ70TP5oc7BwQUYiiSYH").update("generated_locations", FieldValue.delete());   //).set(gameLocations, SetOptions.merge());
                             }
                         }
+                        mapView.getMapAsync(new OnMapReadyCallback() {
+                            @Override
+                            public void onMapReady(MapboxMap mapboxMap) {
+                                for (String key : gameLocations.getGenerated_locations().keySet() ){
+                                    PositionHelper position = (PositionHelper) gameLocations.getGenerated_locations().get(key);
+                                    String snip = ""+position.getLatitude();
+                                    snip.toString();
+                                    mapboxMap.addMarker(new MarkerOptions()
+                                            .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                                            .title(getString(R.string.map_title))
+                                            .snippet(snip));
+                                }
+                                map = mapboxMap;
+                                //List<Marker> markers = map.getMarkers();
+                                // handle onClick of Markers
+                                map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+                                    @Override
+                                    public boolean onMarkerClick(@NonNull Marker marker) {
+
+                                        LatLng currentMarker = marker.getPosition();
+                                        LatLng myPosition = new LatLng(originLocation.getLatitude(), originLocation.getLongitude());
+                                        double distance = myPosition.distanceTo(currentMarker);
+                                        if (distance >= 200){
+                                            Toast.makeText(LiveMaps.this, "Collectible out of reach!",
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                        else {
+                                            Toast.makeText(LiveMaps.this, "Collected",
+                                                    Toast.LENGTH_LONG).show();
+                                            LatLng pos = marker.getPosition();
+                                            String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
+
+                                            DocumentReference ref =  mDatabase.collection("teams").document("leinster2").collection("games").document("leinster");
+                                            ref.update("generated_locations."+deletedKey, FieldValue.delete());
+                                            marker.remove();
+                                        }
+                                        return false;
+                                    }
+                                });
+                                enableLocationPlugin();
+                            }
+
+                        });
                     }
-                    mapView.getMapAsync(new OnMapReadyCallback() {
-                        @Override
-                        public void onMapReady(MapboxMap mapboxMap) {
-                            for (String key : gameLocations.getGenerated_locations().keySet() ){
-                                PositionHelper position = (PositionHelper) gameLocations.getGenerated_locations().get(key);
-                                String snip = ""+position.getLatitude();
-                                snip.toString();
-                                mapboxMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                                        .title(getString(R.string.map_title))
-                                        .snippet(snip));
-                            }
-                            map = mapboxMap;
-                            //List<Marker> markers = map.getMarkers();
-                            // handle onClick of Markers
-                            map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
-                                @Override
-                                public boolean onMarkerClick(@NonNull Marker marker) {
-
-                                    LatLng currentMarker = marker.getPosition();
-                                    LatLng myPosition = new LatLng(originLocation.getLatitude(), originLocation.getLongitude());
-                                    double distance = myPosition.distanceTo(currentMarker);
-                                    if (distance >= 200){
-                                        Toast.makeText(LiveMaps.this, "Collectible out of reach!",
-                                                Toast.LENGTH_LONG).show();
-                                    }
-                                    else {
-                                        Toast.makeText(LiveMaps.this, "Collected",
-                                                Toast.LENGTH_LONG).show();
-                                        LatLng pos = marker.getPosition();
-                                        String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
-
-                                        DocumentReference ref =  mDatabase.collection("teams").document("leinster2").collection("games").document("leinster");
-                                        ref.update("generated_locations."+deletedKey, FieldValue.delete());
-                                        marker.remove();
-                                    }
-                                    return false;
-                                }
-                            });
-                            enableLocationPlugin();
-                        }
-
-                    });
                 }
-            }
-        });
+            });
+        }
     }
 
     public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
