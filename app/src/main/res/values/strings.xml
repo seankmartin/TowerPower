@@ -9,6 +9,14 @@
     <string name="game_page">Search Game</string>
 
     <string name="search_game">Search for a Game</string>
+    <string name="inv_menu">Your Team Inventory</string>
+    <string name="go_back">Go Back</string>
+    <string name="guess_pwd_text">Guess the Password</string>
+    <string name="guess_pwd">Guess</string>
+    <string name="mat_text">Materials</string>
+    <string name="let_text">Letters</string>
+    <string name="let_text_def">No Letters Collected</string>
+    <string name="mat_text_def">No Materials Collected</string>
 
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>

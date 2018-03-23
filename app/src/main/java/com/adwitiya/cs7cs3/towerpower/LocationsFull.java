@@ -50,10 +50,8 @@ public class LocationsFull {
         return generated_locations;
     }
 
-    public void addPosition(double lat, double lon){
-        int i = this.getGenerated_locations().size();
-        String index = "location"+i;
-        this.generated_locations.put( index, new PositionHelper(lat,lon) );
+    public void addPosition(String key, double lat, double lon){
+        this.generated_locations.put( key, new PositionHelper(lat,lon) );
     }
 
     public String deletePosition(double lat, double lon){

@@ -10,7 +10,9 @@ import android.location.Location;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,16 +20,24 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.internal.MDTintHelper;
+import com.afollestad.materialdialogs.internal.ThemeSingleton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -82,6 +92,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     private MapView mapView;
     // variables for adding location layer
     private MapboxMap map;
+    private EditText passwordInput;
     private PermissionsManager permissionsManager;
     private LocationLayerPlugin locationPlugin;
     private LocationEngine locationEngine;
@@ -127,6 +138,31 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         //Get the positions from DB
         positionList = new ArrayList<>();
         retrieveMultiLocFromDB();
+
+        //Handle ShowInventory Button Click
+        FloatingActionButton showInventory = (FloatingActionButton)findViewById(R.id.showInv);
+        showInventory.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                showCustomView();
+            }
+        });
+    }
+
+    //Inventory menu function
+    public void showCustomView() {
+        MaterialDialog dialog =
+                new MaterialDialog.Builder(this)
+                        .title(R.string.inv_menu)
+                        .customView(R.layout.dialog_customview, true)
+                        .positiveText(R.string.guess_pwd)
+                        .negativeText(R.string.go_back)
+                        .onPositive(
+                                (dialog1, which) ->
+                                        Toast.makeText(LiveMaps.this, "WRONG!",
+                                                Toast.LENGTH_LONG).show())
+                        .onNegative((dialog1, which) -> dialog1.hide())
+                        .build();
+        dialog.show();
     }
 
     private void requestEnableGPS(){
@@ -466,7 +502,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
     private void retrieveMultiLocFromDB() {
-        CollectionReference colRef = mDatabase.collection("teams");
+        CollectionReference colRef = mDatabase.collection("teams").document("leinster2").collection("games");
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -499,8 +535,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                         if (tmp != null) lat = (double) tmp;
                                         tmp = locationMap.get("longitude");
                                         if (tmp != null) lon = (double) tmp;
-                                        positionList.add(new PositionHelper(lat, lon));
-                                        if (tmp != null) gameLocations.addPosition(lat, lon);
+                                       positionList.add(new PositionHelper(lat, lon));
+                                        if (tmp != null) gameLocations.addPosition(key, lat, lon);
                                     }
                                 }
                                 // Get a new write batch
@@ -549,22 +585,13 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                         LatLng pos = marker.getPosition();
                                         String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
 
-
-                                      //  WriteBatch batch = mDatabase.batch();
-                                        DocumentReference ref =  mDatabase.collection("teams").document("leinster");
+                                        DocumentReference ref =  mDatabase.collection("teams").document("leinster2").collection("games").document("leinster");
                                         ref.update("generated_locations."+deletedKey, FieldValue.delete());
-                                       // batch.update(ref,"generated_locations", FieldValue.delete());
-                             //           Map<String, ArrayList<LatLng>> Tmap = new HashMap<>();
-                           //             Tmap.put("generated_locations",gameLocations.generated_locations);
-                                        //batch.set(ref, gameLocations, SetOptions.merge());
-                                        // Commit the batch
-                                        //batch.commit();
-                                     marker.remove();
+                                        marker.remove();
                                     }
                                     return false;
                                 }
                             });
-
                             enableLocationPlugin();
                         }
 
