@@ -36,11 +36,12 @@
         <activity
             android:name=".GameSearch"
             android:label="@string/game_page"
-            android:theme="@style/AppTheme.Fullscreen"></activity>
-        <activity android:name=".ToolsActivity"
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity
+            android:name=".ToolsActivity"
             android:label="@string/tools_act"
-            android:theme="@style/AppTheme.Fullscreen">
-        </activity>
+            android:theme="@style/AppTheme.Fullscreen"></activity>
+        <activity android:name=".ChatActivity"></activity>
     </application>
 
 </manifest>

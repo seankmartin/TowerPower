@@ -240,7 +240,12 @@ public class MainActivity extends AppCompatActivity
             // Navigate to Map Activity
             Intent LiveMap = new Intent(getApplicationContext(),LiveMaps.class);
             startActivity(LiveMap);
-        } else if (id == R.id.nav_tools) {
+        }   else if (id == R.id.nav_chat) {
+            // Navigate to Map Activity
+            Intent Chat = new Intent(getApplicationContext(),ChatActivity.class);
+            startActivity(Chat);
+        }
+        else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
             Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
             startActivity(ToolsActivity);

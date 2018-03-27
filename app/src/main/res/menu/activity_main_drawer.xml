@@ -24,6 +24,11 @@
             android:id="@+id/nav_tools"
             android:icon="@drawable/ic_menu_manage"
             android:title="Tools" />
+
+        <item
+            android:id="@+id/nav_chat"
+            android:icon="@drawable/ic_drafts_black_24dp"
+            android:title="Chat" />
     </group>
 
     <item android:title="Communicate">
