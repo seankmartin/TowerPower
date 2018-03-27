@@ -1,5 +1,7 @@
 package com.adwitiya.cs7cs3.towerpower;
 
+import android.net.Uri;
+
 /**
  * Created by Stefano on 27/03/2018.
  */
@@ -28,6 +30,7 @@ public class UserInfo {
     public long getAfkTimeOut() {
         return afkTimeOut;
     }
+
 
     public void setAfkTimeOut(int afkTimeOut) {
         this.afkTimeOut = afkTimeOut;

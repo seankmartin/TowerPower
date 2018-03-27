@@ -76,6 +76,7 @@ public class GameSearch extends AppCompatActivity
     private MapView mapView;
     private MapboxMap map;
     String user_id;
+    Uri photoUrl;
     private String teamID;
     private ArrayList<UserInfo> team;
 
@@ -136,7 +137,7 @@ public class GameSearch extends AppCompatActivity
             // Name, email address, and profile photo Url
             String user_name = user.getDisplayName();
             String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+            photoUrl = user.getPhotoUrl();
             user_id = user.getUid();
 
             // Check if user's email is verified
@@ -316,6 +317,7 @@ public class GameSearch extends AppCompatActivity
 
                                 UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID );
                                 team.add(user);
+
                                 //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                             }
                         }
