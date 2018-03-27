@@ -128,6 +128,12 @@ public class GameSearch extends AppCompatActivity
         Button refuseBtn = (Button)findViewById(R.id.declineBtn);
         refuseBtn.setEnabled(false);
         refuseBtn.setOnClickListener(GameSearch.this);
+
+        teamID = "";
+        SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
+        editor_team.putString("TeamID",teamID);
+        editor_team.commit();
+
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -199,10 +205,18 @@ public class GameSearch extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
+        FirebaseUser gameuser = FirebaseAuth.getInstance().getCurrentUser();
         int BtnID = view.getId();
         if (BtnID == R.id.SearchGame) {
+            String photoUrlstr = "";
             TextView tvu = (TextView) findViewById(R.id.user_name);
             String user_name = "";
+            Uri pUrl = gameuser.getPhotoUrl();
+            if (pUrl != null)
+            {
+                photoUrlstr = photoUrl.toString();
+            }
+
             if (tvu !=null){
                 user_name = tvu.getText().toString();
             }
@@ -219,7 +233,7 @@ public class GameSearch extends AppCompatActivity
                 //Fill Player Profile Infos
                 fillYourInfo();
                 UserMatchingInfo user = new UserMatchingInfo(new PositionHelper(originLocation.getLatitude(), originLocation.getLongitude()),
-                        false, user_id, user_email, user_name, "random", 0);
+                        false, user_id, user_email, user_name, "random", 0,photoUrlstr);
                 //Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
                 mDatabase.collection("matchmaking").document(user_id).set(user);
                 Button searchBtn = (Button)findViewById(R.id.SearchGame);
@@ -245,7 +259,6 @@ public class GameSearch extends AppCompatActivity
                             SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
                             editor_team.putString("TeamID",teamID);
                             editor_team.commit();
-
                             getTeam();
 
                             Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
@@ -315,9 +328,52 @@ public class GameSearch extends AppCompatActivity
                                 tmp = userMap.get("userID");
                                 if (tmp != null) userID = (String) tmp;
 
-                                UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID );
+                                String photoUrl="";
+                                tmp = userMap.get("photoUrl");
+                                if (tmp != null) photoUrl = (String) tmp;
+
+                                UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID,photoUrl );
                                 team.add(user);
 
+
+
+                                if (i==0){
+                                    TextView player_name = (TextView)findViewById(R.id.playername1);
+                                    TextView player_role = (TextView)findViewById(R.id.playerrole1);
+                                    ImageView profile_pic = (ImageView) findViewById(R.id.playerimg1);
+
+                                    player_name.setText(user.getName());
+                                    player_role.setText(user.getRole());
+
+                                    if (user.getPhotoUrl() != "") {
+                                        Log.d(TAG, "ahahahahhaha"+user.getPhotoUrl());
+                                        Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
+                                    }
+                                }
+
+                                if (i==1){
+                                    TextView player_name = (TextView)findViewById(R.id.playername2);
+                                    TextView player_role = (TextView)findViewById(R.id.playerrole2);
+                                    ImageView profile_pic = (ImageView) findViewById(R.id.playerimg2);
+
+                                    player_name.setText(user.getName());
+                                    player_role.setText(user.getRole());
+                                    if (user.getPhotoUrl() != "") {
+                                        Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
+                                    }
+                                }
+
+                                if (i==2){
+                                    TextView player_name = (TextView)findViewById(R.id.playername3);
+                                    TextView player_role = (TextView)findViewById(R.id.playerrole3);
+                                    ImageView profile_pic = (ImageView) findViewById(R.id.playerimg3);
+
+                                    player_name.setText(user.getName());
+                                    player_role.setText(user.getRole());
+                                    if (user.getPhotoUrl() != "") {
+                                        Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
+                                    }
+                                }
                                 //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                             }
                         }

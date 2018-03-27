@@ -14,8 +14,9 @@ public class UserMatchingInfo {
     String name;
     String role;
     int afkTimeOut;
+    String photoUrl;
 
-    public UserMatchingInfo(PositionHelper location, boolean shouldSearchAgain, String userID, String email, String name, String role, int afkTimeOut) {
+    public UserMatchingInfo(PositionHelper location, boolean shouldSearchAgain, String userID, String email, String name, String role, int afkTimeOut,String photoUrl) {
         this.location = location;
         this.shouldSearchAgain = shouldSearchAgain;
         this.userID = userID;
@@ -23,9 +24,18 @@ public class UserMatchingInfo {
         this.name = name;
         this.role = role;
         this.afkTimeOut = afkTimeOut;
+        this.photoUrl = photoUrl;
     }
 
     public UserMatchingInfo() {
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 
     public PositionHelper getLocation() {

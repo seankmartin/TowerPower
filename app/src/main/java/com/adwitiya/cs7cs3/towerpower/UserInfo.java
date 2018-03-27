@@ -15,8 +15,9 @@ public class UserInfo {
     private String role;
     private boolean shouldSearchAgain;
     private String userID;
+    private String photoUrl;
 
-    public UserInfo(long afkTimeOut, String email, PositionHelper location, String name, String response, String role, boolean shouldSearchAgain, String userID) {
+    public UserInfo(long afkTimeOut, String email, PositionHelper location, String name, String response, String role, boolean shouldSearchAgain, String userID, String photoUrl) {
         this.afkTimeOut = afkTimeOut;
         this.email = email;
         this.location = location;
@@ -25,12 +26,20 @@ public class UserInfo {
         this.role = role;
         this.shouldSearchAgain = shouldSearchAgain;
         this.userID = userID;
+        this.photoUrl = photoUrl;
     }
 
     public long getAfkTimeOut() {
         return afkTimeOut;
     }
 
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
 
     public void setAfkTimeOut(int afkTimeOut) {
         this.afkTimeOut = afkTimeOut;
