@@ -44,7 +44,7 @@ public class GameInfo {
     }
 
     public void addLetter(String key, String letter){
-        this.initialPositions.put( key, letter );
+        this.letters.put( key, letter );
     }
 
     public Map<String, Object> getMaterials() {
@@ -68,7 +68,7 @@ public class GameInfo {
     }
 
     public void addTeamMember(String key, String userID){
-        this.passwords.put( key, userID );
+        this.team.put( key, userID );
     }
 
     public Map<String, Object> getTowers() {
@@ -76,7 +76,7 @@ public class GameInfo {
     }
 
     public void addTower(String key, double lat, double lon){
-        this.initialPositions.put( key, new PositionHelper(lat,lon) );
+        this.towers.put( key, new PositionHelper(lat,lon) );
     }
 
     public Map<String, Object> getCommonInventory() {

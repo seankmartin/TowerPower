@@ -504,7 +504,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
     private void retrieveMultiLocFromDB() {
         //mDatabase.collection("teams").document()
-        String notFoundMsg = "Team not found";
+        String notFoundMsg = "TeamInfo not found";
         SharedPreferences TeamPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
         String teamID = TeamPrefs.getString("TeamID", notFoundMsg);
 
@@ -534,11 +534,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
                                     Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
                                     if (map2 != null) {
-                                        //ArrayList<Map<String, Object>> map3 = (ArrayList<Map<String, Object>>) map2.get("locations");
-                                        //for (Map<String, Object> locationMap: map3) {
                                         int i;
                                         map2 = (Map<String, Object>) map2;
-                                        //for (i = 0; i < map2.size(); i++) {
                                         for ( String key : map2.keySet() ){
                                            // String name = "location" + i;
                                             Map<String, Object> locationMap = (Map<String, Object>) map2.get(key);
@@ -554,13 +551,10 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                     WriteBatch batch = mDatabase.batch();
                                     DocumentReference ref = mDatabase.collection("teams").document(docID);
                                     batch.update(ref, "generated_locations", FieldValue.delete());
-                                    //      Map<String, ArrayList<LatLng>> Tmap = new HashMap<>();
-                                    //     Tmap.put("generated_locations",gameLocations.generated_locations);
                                     batch.set(ref, gameLocations, SetOptions.merge());
                                     // Commit the batch
                                     batch.commit();
                                     Log.d(TAG, gameLocations.toString());
-                                    // mDatabase.collection("gameLocations").document("AJ70TP5oc7BwQUYiiSYH").update("generated_locations", FieldValue.delete());   //).set(gameLocations, SetOptions.merge());
                                 }
                             }
                         }

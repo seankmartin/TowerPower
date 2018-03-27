@@ -60,6 +60,7 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,6 +77,7 @@ public class GameSearch extends AppCompatActivity
     private MapboxMap map;
     String user_id;
     private String teamID;
+    private ArrayList<UserInfo> team;
 
 
 
@@ -238,7 +240,7 @@ public class GameSearch extends AppCompatActivity
                             Map<String, Object> map = snapshot.getData();
                             Object tmp = map.get("team_id");
                             if (tmp != null) teamID = (String) tmp;
-                            //Get Team ID and Store it to SharedPreference
+                            //Get TeamInfo ID and Store it to SharedPreference
                             SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
                             editor_team.putString("TeamID",teamID);
                             editor_team.commit();
@@ -269,22 +271,53 @@ public class GameSearch extends AppCompatActivity
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
+
+                    team = new ArrayList<>();
+
                     if (document != null && document.exists()) {
                         Map<String, Object> map = document.getData();
                         int i;
                         for (i=0; i<3; i++) {
                             Object tmp = map.get("user"+i);
-                            Map<String, Object> user = null;
-                            if (tmp != null) user = (Map<String, Object>) tmp;
-                            tmp = user.get("userID");
-                            String otherUserID = "";
-                            String otherUserRole = "";
-                            if (tmp != null) otherUserID = (String) tmp;
-                            if (otherUserID != user_id) {
-                                tmp = user.get("role");
-                                if (tmp != null) otherUserRole = (String) tmp;
+                            Map<String, Object> userMap = null;
+                            if (tmp != null){
+                                userMap = (Map<String, Object>) tmp;
+                                long afkTimeOut=-1;
+                                tmp = userMap.get("afkTimeOut");
+                                if (tmp != null) afkTimeOut = (long) tmp;
+                                String email="";
+                                tmp = userMap.get("email");
+                                if (tmp != null) email = (String) tmp;
+                                Map<String, Object> locationMap=null;
+                                tmp = userMap.get("location");
+                                if (tmp != null) locationMap = (Map<String, Object>) tmp;
+                                tmp = locationMap.get("latitude");
+                                double lat = 0;
+                                if (tmp != null) lat = (double) tmp;
+                                tmp = locationMap.get("longitude");
+                                double lng = 0;
+                                if (tmp != null) lng = (double) tmp;
+
+                                String name="";
+                                tmp = userMap.get("name");
+                                if (tmp != null) name = (String) tmp;
+                                String response="";
+                                tmp = userMap.get("response");
+                                if (tmp != null) response = (String) tmp;
+                                String role="";
+                                tmp = userMap.get("role");
+                                if (tmp != null) role = (String) tmp;
+                                boolean shouldSearchAgain=false;
+                                tmp = userMap.get("shouldSearchAgain");
+                                if (tmp != null) shouldSearchAgain = (boolean) tmp;
+                                String userID="";
+                                tmp = userMap.get("userID");
+                                if (tmp != null) userID = (String) tmp;
+
+                                UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID );
+                                team.add(user);
+                                //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                             }
-                            Toast.makeText(GameSearch.this, "User: "+ otherUserID + " Role: "+otherUserRole, Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Log.d(TAG, "No such document");
