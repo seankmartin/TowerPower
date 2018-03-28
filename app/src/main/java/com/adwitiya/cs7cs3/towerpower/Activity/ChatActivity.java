@@ -42,6 +42,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
@@ -60,13 +64,47 @@ public class ChatActivity extends AppCompatActivity
         implements FirebaseAuth.AuthStateListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "FirestoreChatActivity";
 
-    private static final CollectionReference sChatCollection =
-            FirebaseFirestore.getInstance().collection("chats");
+    private CollectionReference sChatCollection =
+            FirebaseFirestore.getInstance().collection("chat");
     /** Get the last 50 chat messages ordered by timestamp . */
-    private static final Query sChatQuery = sChatCollection.orderBy("timestamp").limit(50);
+    private Query sChatQuery = sChatCollection.orderBy("timestamp").limit(50);
+    private String teamID;
 
     static {
         FirebaseFirestore.setLoggingEnabled(true);
+    }
+
+    private void getChatReference() {
+        String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore mDatabase = FirebaseFirestore.getInstance();
+        DocumentReference user_ref = mDatabase.collection("users").document(user_id);
+        user_ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document != null && document.exists()) {
+                        teamID = document.getData().get("team_id").toString();
+                        Log.d(TAG, "Team is " + teamID);
+                        if(teamID == null) {
+                            Log.d(TAG, "Returning default");
+                            sChatCollection = mDatabase.collection("chat");
+                        }
+                        else {
+                            Log.d(TAG, "Returning non default");
+                            sChatCollection = mDatabase.collection("teams").document(teamID).collection("chat");
+                        }
+
+                    } else {
+                        Log.d(TAG, "User document does not exist in database in chat activity");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+                sChatQuery = sChatCollection.orderBy("timestamp").limit(50);
+                attachRecyclerViewAdapter();
+            }
+        });
     }
 
     @BindView(R.id.messagesList)
@@ -97,7 +135,6 @@ public class ChatActivity extends AppCompatActivity
         checkFirebaseAuth(navigationView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         ImeHelper.setImeOnDoneListener(mMessageEdit, new ImeHelper.DonePressedListener() {
             @Override
             public void onDonePressed() {
@@ -113,6 +150,8 @@ public class ChatActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         switchSound();
+        getChatReference();
+        attachRecyclerViewAdapter();
     }
 
     @Override
@@ -174,7 +213,7 @@ public class ChatActivity extends AppCompatActivity
     @Override
     public void onStart() {
         super.onStart();
-        if (isSignedIn()) { attachRecyclerViewAdapter(); }
+        //if (isSignedIn()) { attachRecyclerViewAdapter(); }
         FirebaseAuth.getInstance().addAuthStateListener(this);
     }
 
@@ -189,12 +228,14 @@ public class ChatActivity extends AppCompatActivity
         mSendButton.setEnabled(isSignedIn());
         mMessageEdit.setEnabled(isSignedIn());
 
+        /*
         if (isSignedIn()) {
             attachRecyclerViewAdapter();
         } else {
             Toast.makeText(this, R.string.sign, Toast.LENGTH_SHORT).show();
             auth.signInAnonymously().addOnCompleteListener(new SignInResultNotifier(this));
         }
+        */
     }
 
     private boolean isSignedIn() {
@@ -218,7 +259,10 @@ public class ChatActivity extends AppCompatActivity
     @OnClick(R.id.sendButton)
     public void onSendClick() {
         String uid = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-        String name = "User " + uid.substring(0,uid.indexOf(" "));
+        if(uid == null) {
+            uid = "Default user";
+        }
+        String name = "User " + uid;
         onAddMessage(new Chat(name, mMessageEdit.getText().toString(), uid));
         mMessageEdit.setText("");
     }
