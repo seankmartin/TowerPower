@@ -25,7 +25,7 @@ public class SignInResultNotifier implements OnCompleteListener<AuthResult> {
         if (task.isSuccessful()) {
             Toast.makeText(mContext, R.string.signed_in, Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(mContext, R.string.project_id, Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, R.string.project_id, Toast.LENGTH_SHORT).show();
         }
     }
 }

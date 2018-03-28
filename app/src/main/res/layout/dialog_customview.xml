@@ -12,6 +12,7 @@
         android:textSize="20dp" />
 
     <TextView
+        android:id="@+id/collectedMaterials"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -28,6 +29,7 @@
         android:textSize="20dp" />
 
     <TextView
+        android:id="@+id/collectedHints"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"

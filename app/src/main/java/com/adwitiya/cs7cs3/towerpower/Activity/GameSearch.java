@@ -130,12 +130,6 @@ public class GameSearch extends AppCompatActivity
         Button refuseBtn = (Button)findViewById(R.id.declineBtn);
         refuseBtn.setEnabled(false);
         refuseBtn.setOnClickListener(GameSearch.this);
-
-        teamID = "";
-        SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
-        editor_team.putString("TeamID",teamID);
-        editor_team.commit();
-
     }
 
     private void checkFirebaseAuth(NavigationView view){
@@ -230,7 +224,7 @@ public class GameSearch extends AppCompatActivity
 
             if ( user_name == getText(R.string.def_user) && (user_email == getText(R.string.def_email))){
                 Toast.makeText(this, "Please Sign-in before initiating a Game Search !!",
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_SHORT).show();
             }else{
                 //Fill Player Profile Infos
                 fillYourInfo();

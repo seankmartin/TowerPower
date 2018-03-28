@@ -240,7 +240,7 @@ public class ToolsActivity extends AppCompatActivity
             Boolean SoundSwitchState = SoundSwitch.isChecked();
             if (SoundSwitchState == true) {
                 Toast.makeText(this, "Sound On",
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_SHORT).show();
                 SharedPreferences.Editor editor = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
                 editor.putBoolean("SoundState", true);
                 editor.commit();
@@ -248,7 +248,7 @@ public class ToolsActivity extends AppCompatActivity
 
             }if(SoundSwitchState == false){
                 Toast.makeText(this, "Sound Off",
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_SHORT).show();
                 SharedPreferences.Editor editor = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
                 editor.putBoolean("SoundState", false);
                 editor.commit();

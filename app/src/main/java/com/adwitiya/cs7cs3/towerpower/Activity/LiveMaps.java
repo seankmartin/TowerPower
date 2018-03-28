@@ -1,18 +1,25 @@
 package com.adwitiya.cs7cs3.towerpower.Activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -30,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.Helpers.GameInfo;
 import com.adwitiya.cs7cs3.towerpower.Helpers.LocationsFull;
 import com.adwitiya.cs7cs3.towerpower.Helpers.PositionHelper;
 import com.adwitiya.cs7cs3.towerpower.R;
@@ -60,6 +68,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -77,6 +87,8 @@ import com.mapbox.services.android.telemetry.location.LostLocationEngine;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import com.squareup.picasso.Picasso;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +114,10 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     private FirebaseFirestore mDatabase;
     private LocationsFull gameLocations;
     private FirebaseUser user;
+    private GameInfo gameInfo;
+    private String teamID;
+    private String gameID;
+    private int hint=0, material=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +165,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
     //Inventory menu function
     public void showCustomView() {
+        String materials = "", hints = "";
+
         MaterialDialog dialog =
                 new MaterialDialog.Builder(this)
                         .title(R.string.inv_menu)
@@ -158,10 +176,19 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                         .onPositive(
                                 (dialog1, which) ->
                                         Toast.makeText(LiveMaps.this, "WRONG!",
-                                                Toast.LENGTH_LONG).show())
+                                                Toast.LENGTH_SHORT).show())
                         .onNegative((dialog1, which) -> dialog1.hide())
                         .build();
+
         dialog.show();
+        View CustomView= dialog.getCustomView();
+        materials = ""+gameInfo.getMaterialsInventory();
+        TextView collectedMaterials = (TextView)CustomView.findViewById(R.id.collectedMaterials);
+        collectedMaterials.setText(materials);
+
+        hints = ""+gameInfo.getHintsInventory();
+        TextView collectedHints = (TextView)CustomView.findViewById(R.id.collectedHints);
+        collectedHints.setText(hints);
     }
 
     private void requestEnableGPS(){
@@ -508,107 +535,46 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         //mDatabase.collection("teams").document()
         String notFoundMsg = "TeamInfo not found";
         SharedPreferences TeamPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
-        String teamID = TeamPrefs.getString("TeamID", notFoundMsg);
+        teamID = TeamPrefs.getString("TeamID", notFoundMsg);
 
         if (teamID.compareTo(notFoundMsg)==0){
             Toast.makeText(LiveMaps.this, notFoundMsg,
-                    Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_SHORT).show();
         }
         else {
             initialRenderMarkers();
-
             }
     }
 
     public void initialRenderMarkers(){
-        CollectionReference colRef = mDatabase.collection("teams").document("leinster2").collection("games");
+        CollectionReference colRef = mDatabase.collection("teams").document(teamID).collection("games");
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (DocumentSnapshot doc : task.getResult()) {
                         if (doc != null && doc.exists()) {
-                            String docID = doc.getId();
-                            if (docID.compareTo("leinster")==0 ) {
-                                Map<String, Object> map = doc.getData();
-                                double lat = -1, lon = -1;
-                                Object tmp = map.get("latitude");
-                                if (tmp != null) lat = (double) tmp;
-                                tmp = map.get("longitude");
-                                if (tmp != null) lon = (double) tmp;
-                                positionList.add(new PositionHelper(lat, lon));
-                                if (tmp != null) gameLocations = new LocationsFull(lat, lon);
-
-
-                                Map<String, Object> map2 = (Map<String, Object>) map.get("generated_locations");
-                                if (map2 != null) {
-                                    int i;
-                                    map2 = (Map<String, Object>) map2;
-                                    for ( String key : map2.keySet() ){
-                                        // String name = "location" + i;
-                                        Map<String, Object> locationMap = (Map<String, Object>) map2.get(key);
-                                        tmp = locationMap.get("latitude");
-                                        if (tmp != null) lat = (double) tmp;
-                                        tmp = locationMap.get("longitude");
-                                        if (tmp != null) lon = (double) tmp;
-                                        positionList.add(new PositionHelper(lat, lon));
-                                        if (tmp != null) gameLocations.addPosition(key, lat, lon);
-                                    }
-                                }
-                                // Get a new write batch
-                                WriteBatch batch = mDatabase.batch();
-                                DocumentReference ref = mDatabase.collection("teams").document(docID);
-                                batch.update(ref, "generated_locations", FieldValue.delete());
-                                batch.set(ref, gameLocations, SetOptions.merge());
-                                // Commit the batch
-                                batch.commit();
-                                Log.d(TAG, gameLocations.toString());
-                            }
+                            gameID = doc.getId();
+                            gameInfo = new GameInfo();
+                            decodeGameDBStructure(doc);
                         }
+                        break; // N.B. THIS IS TO RETRIEVE ONLY ONE
                     }
                     mapView.getMapAsync(new OnMapReadyCallback() {
                         @Override
                         public void onMapReady(MapboxMap mapboxMap) {
-                            for (String key : gameLocations.getGenerated_locations().keySet() ){
-                                PositionHelper position = (PositionHelper) gameLocations.getGenerated_locations().get(key);
-                                String snip = ""+position.getLatitude();
-                                snip.toString();
-                                mapboxMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                                        .title(getString(R.string.map_title))
-                                        .snippet(snip));
-                            }
-                            map = mapboxMap;
-                            //List<Marker> markers = map.getMarkers();
+                            map = addMarkersToMap(mapboxMap);
+
                             // handle onClick of Markers
                             map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                                 @Override
                                 public boolean onMarkerClick(@NonNull Marker marker) {
-
-                                    LatLng currentMarker = marker.getPosition();
-                                    LatLng myPosition = new LatLng(originLocation.getLatitude(), originLocation.getLongitude());
-                                    double distance = myPosition.distanceTo(currentMarker);
-                                    if (distance >= 800){
-                                        Toast.makeText(LiveMaps.this, "Collectible out of reach!",
-                                                Toast.LENGTH_LONG).show();
-                                    }
-                                    else {
-                                        Toast.makeText(LiveMaps.this, "Collected",
-                                                Toast.LENGTH_LONG).show();
-                                        LatLng pos = marker.getPosition();
-                                        String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
-
-                                        DocumentReference ref =  mDatabase.collection("teams").document("leinster2").collection("games").document("leinster");
-                                        ref.update("generated_locations."+deletedKey, FieldValue.delete());
-                                        marker.remove();
-                                    }
-                                    return false;
+                                    return collect(marker);
                                 }
                             });
                             enableLocationPlugin();
                             updateLocations();
                         }
-
                     });
                 }
             }
@@ -616,8 +582,181 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
     }
 
+    public void decodeGameDBStructure(DocumentSnapshot doc){
+        Map<String, Object> gameInfoMap = doc.getData();
+        double lat = -1, lon = -1;
+        Object tmp = gameInfoMap.get("latitude");
+        if (tmp != null) lat = (double) tmp;
+        tmp = gameInfoMap.get("longitude");
+        if (tmp != null) lon = (double) tmp;
+        gameInfo.setStartLocation(new PositionHelper(lat,lon));
+
+        Map<String, Object> basesMap = (Map<String, Object>) gameInfoMap.get("bases");
+        if (basesMap != null) {
+            basesMap = (Map<String, Object>) basesMap;
+            for ( String key : basesMap.keySet() ){
+                Map<String, Object> locationMap = (Map<String, Object>) basesMap.get(key);
+                tmp = locationMap.get("latitude");
+                if (tmp != null) lat = (double) tmp;
+                tmp = locationMap.get("longitude");
+                if (tmp != null) lon = (double) tmp;
+                if (tmp != null) gameInfo.addBase(key,  lat, lon);
+            }
+        }
+        Map<String, Object> hintsMap = (Map<String, Object>) gameInfoMap.get("hints");
+        if (hintsMap != null) {
+            hintsMap = (Map<String, Object>) hintsMap;
+            for ( String key : hintsMap.keySet() ){
+                Map<String, Object> locationMap = (Map<String, Object>) hintsMap.get(key);
+                tmp = locationMap.get("latitude");
+                if (tmp != null) lat = (double) tmp;
+                tmp = locationMap.get("longitude");
+                if (tmp != null) lon = (double) tmp;
+                if (tmp != null) gameInfo.addHint(key,  lat, lon);
+            }
+        }
+        Map<String, Object> towersMap = (Map<String, Object>) gameInfoMap.get("towers");
+        if (towersMap != null) {
+            towersMap = (Map<String, Object>) towersMap;
+            for ( String key : towersMap.keySet() ){
+                Map<String, Object> locationMap = (Map<String, Object>) towersMap.get(key);
+                tmp = locationMap.get("latitude");
+                if (tmp != null) lat = (double) tmp;
+                tmp = locationMap.get("longitude");
+                if (tmp != null) lon = (double) tmp;
+                if (tmp != null) gameInfo.addTower(key,  lat, lon);
+            }
+        }
+        Map<String, Object> materialsMap = (Map<String, Object>) gameInfoMap.get("materials");
+        if (materialsMap != null) {
+            materialsMap = (Map<String, Object>) materialsMap;
+            for ( String key : materialsMap.keySet() ){
+                Map<String, Object> locationMap = (Map<String, Object>) materialsMap.get(key);
+                tmp = locationMap.get("latitude");
+                if (tmp != null) lat = (double) tmp;
+                tmp = locationMap.get("longitude");
+                if (tmp != null) lon = (double) tmp;
+                if (tmp != null) gameInfo.addMaterial(key,  lat, lon);
+            }
+        }
+        Map<String, Object> inventoryMap = (Map<String, Object>) gameInfoMap.get("inventory");
+        if (inventoryMap != null) {
+            inventoryMap = (Map<String, Object>) inventoryMap;
+            tmp = inventoryMap.get("hints");
+            if (tmp != null) gameInfo.setHintsInventory( (long) tmp);
+            tmp = inventoryMap.get("materials");
+            if (tmp != null) gameInfo.setMaterialsInventory( (long) tmp);
+
+        }
+
+    }
+
+
+    public boolean collect(Marker marker){
+        LatLng currentMarker = marker.getPosition();
+        LatLng myPosition = new LatLng(originLocation.getLatitude(), originLocation.getLongitude());
+        double distance = myPosition.distanceTo(currentMarker);
+        if (distance >= 800){
+            Toast.makeText(LiveMaps.this, "Collectible out of reach!",
+                    Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(LiveMaps.this, "Collected",
+                    Toast.LENGTH_SHORT).show();
+            LatLng pos = marker.getPosition();
+            //String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
+            String deletedKey = gameInfo.collect(pos.getLatitude(), pos.getLongitude());
+            if (deletedKey == null){
+                Toast.makeText(LiveMaps.this, "This is not a collectible", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                DocumentReference ref =  mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
+                if ( deletedKey.contains("hint") ) {
+                    WriteBatch batch = mDatabase.batch();
+                    batch.update(ref, "hints." + deletedKey, FieldValue.delete());
+                    batch.update(ref, "inventory.hints",gameInfo.getHintsInventory());
+                    batch.commit();
+
+                }
+                else if ( deletedKey.contains("material") ) {
+                    WriteBatch batch = mDatabase.batch();
+                    batch.update(ref,"materials." + deletedKey, FieldValue.delete());
+                    Log.e(TAG, "Mateirals. "+gameInfo.getMaterialsInventory());
+                    batch.update(ref,"inventory.materials",gameInfo.getMaterialsInventory());
+                    batch.commit();
+                }
+
+            }
+        }
+        return false;
+    }
+
+    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = (DrawableCompat.wrap(drawable)).mutate();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    public MapboxMap addMarkersToMap(MapboxMap map) {
+
+        Bitmap bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_base);
+        Icon icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+
+        for (String key : gameInfo.getBases().keySet() ){
+            PositionHelper position = (PositionHelper)  gameInfo.getBases().get(key);
+            String snip = key;
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                    .title(getString(R.string.map_title))
+                    .snippet(snip)
+                    .icon(icon));
+        }
+        bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_hint);
+        icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+        for (String key : gameInfo.getHints().keySet() ){
+            PositionHelper position = (PositionHelper)  gameInfo.getHints().get(key);
+            String snip = key;
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                    .title(getString(R.string.map_title))
+                    .snippet(snip)
+                    .icon(icon));
+        }
+        bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_material);
+        icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+        for (String key : gameInfo.getMaterials().keySet() ){
+            PositionHelper position = (PositionHelper)  gameInfo.getMaterials().get(key);
+            String snip = key;
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                    .title(getString(R.string.map_title))
+                    .snippet(snip)
+                    .icon(icon));
+        }
+        bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_tower);
+        icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+        for (String key : gameInfo.getTowers().keySet() ){
+            PositionHelper position = (PositionHelper)  gameInfo.getTowers().get(key);
+            String snip = key;
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                    .title(getString(R.string.map_title))
+                    .snippet(snip)
+                    .icon(icon));
+        }
+        return map;
+    }
+
     public void updateLocations(){
-        DocumentReference colRef = mDatabase.collection("teams").document("leinster2").collection("games").document("leinster");
+        DocumentReference colRef = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
         colRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
@@ -629,43 +768,10 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
                 if (snapshot != null && snapshot.exists()) {
 
-                    String docID = snapshot.getId();
-                    if (docID.compareTo("leinster")==0 ) {
-                        Map<String, Object> documenetMap = snapshot.getData();
-                        double lat = -1, lon = -1;
-                        Object tmp = documenetMap.get("latitude");
-                        if (tmp != null) lat = (double) tmp;
-                        tmp = documenetMap.get("longitude");
-                        if (tmp != null) lon = (double) tmp;
-                        if (tmp != null) gameLocations = new LocationsFull(lat, lon);
-
-
-                        Map<String, Object> map2 = (Map<String, Object>) documenetMap.get("generated_locations");
-                        if (map2 != null) {
-                            int i;
-                            map2 = (Map<String, Object>) map2;
-                            for (String key : map2.keySet()) {
-                                // String name = "location" + i;
-                                Map<String, Object> locationMap = (Map<String, Object>) map2.get(key);
-                                tmp = locationMap.get("latitude");
-                                if (tmp != null) lat = (double) tmp;
-                                tmp = locationMap.get("longitude");
-                                if (tmp != null) lon = (double) tmp;
-                                if (tmp != null) gameLocations.addPosition(key, lat, lon);
-                            }
-                        }
-                        map.clear();
-                        for (String key : gameLocations.getGenerated_locations().keySet()) {
-                            PositionHelper position = (PositionHelper) gameLocations.getGenerated_locations().get(key);
-                            String snip = "" + position.getLatitude();
-                            snip.toString();
-                            map.addMarker(new MarkerOptions()
-                                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                                    .title(getString(R.string.map_title))
-                                    .snippet(snip));
-                        }
-                        Log.d(TAG, gameLocations.toString());
-                    }
+                    decodeGameDBStructure(snapshot);
+                    map.clear();
+                    map = addMarkersToMap(map);
+                    Log.d(TAG, gameInfo.toString());
                 } else {
                     Log.d(TAG, "Current data: null");
                 }

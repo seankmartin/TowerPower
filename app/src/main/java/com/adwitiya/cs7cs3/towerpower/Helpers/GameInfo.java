@@ -1,6 +1,12 @@
 package com.adwitiya.cs7cs3.towerpower.Helpers;
 
 import java.util.Date;
+
+/**
+ * Created by Stefano on 23/03/2018.
+ */
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,100 +15,91 @@ import java.util.Map;
  */
 
 public class GameInfo {
-    Map<String, Object> initialPositions;
-    Map<String, Object> letters;
-    Map<String, Object> materials;
-    Map<String, Object> passwords;
-    Map<String, Object> team;
-    Map<String, Object> towers;
-    Map<String, Object> commonInventory;
-    Map<String, Object> gameArea;
-    Date startTime;
+    private Map<String, Object> initialPosition;
+    private Map<String, Object>  hints;
+    private Map<String, Object>  materials;
+    private Map<String, Object> bases;
+    private Map<String, Object>  towers;
+    private long materialsInventory;
+    private long hintsInventory;
+    private PositionHelper startLocation;
+    private Date startTime;
 
     public GameInfo() {
-        this.initialPositions = new HashMap<String, Object>();
-        this.letters = new HashMap<String, Object>();
+        this.initialPosition = new HashMap<String, Object>();
+        this.hints = new HashMap<String, Object>();
         this.materials = new HashMap<String, Object>();
-        this.passwords = new HashMap<String, Object>();
-        this.team = new HashMap<String, Object>();
+        this.bases = new HashMap<String, Object>();
         this.towers = new HashMap<String, Object>();
-        this.commonInventory = new HashMap<String, Object>();
-        this.gameArea = new HashMap<String, Object>();
+        this.materialsInventory = 0;
+        this.hintsInventory = 0;
         this.startTime = new Date();
     }
 
-    public Map<String, Object> getInitialPositions() {
-        return initialPositions;
+    public Map<String, Object> getInitialPosition() {
+        return initialPosition;
     }
 
-    public void addInitialPosition(String key, double lat, double lon){
-        this.initialPositions.put( key, new PositionHelper(lat,lon) );
+    public void setInitialPosition(Map<String, Object> initialPosition) {
+        this.initialPosition = initialPosition;
     }
 
-    public Map<String, Object> getLetters() {
-        return letters;
+    public Map<String, Object> getHints() {
+        return hints;
     }
 
-    public void addLetter(String key, String letter){
-        this.letters.put( key, letter );
+    public void addHint(String key, double lat, double lon) {
+        this.hints.put( key, new PositionHelper(lat,lon) );
     }
 
     public Map<String, Object> getMaterials() {
         return materials;
     }
 
-    public void addMaterial(String key, double lat, double lon){
+    public void addMaterial(String key, double lat, double lon) {
         this.materials.put( key, new PositionHelper(lat,lon) );
     }
 
-    public Map<String, Object> getPasswords() {
-        return passwords;
+    public String collect(double lat, double lon){
+        int i=0;
+        String finalKey=null;
+        PositionHelper pos;
+        for ( String key : this.getHints().keySet() ){
+            pos = (PositionHelper) this.getHints().get(key);
+            if (pos.getLatitude() == lat && pos.getLongitude() == lon) {
+                finalKey = key;
+                this.getHints().remove(finalKey);
+                addHintToInvetory();
+                return finalKey;
+            }
+        }
+        for ( String key : this.getMaterials().keySet() ){
+            pos = (PositionHelper) this.getMaterials().get(key);
+            if (pos.getLatitude() == lat && pos.getLongitude() == lon) {
+                finalKey = key;
+                this.getMaterials().remove(finalKey);
+                addMaterialToInvetory();
+                return finalKey;
+            }
+        }
+
+        return finalKey;
     }
 
-    public void addPassword(String key, String password){
-        this.passwords.put( key, password );
+    public Map<String, Object> getBases() {
+        return bases;
     }
 
-    public Map<String, Object> getTeam() {
-        return team;
-    }
-
-    public void addTeamMember(String key, String userID){
-        this.team.put( key, userID );
+    public void addBase(String key, double lat, double lon) {
+        this.bases.put( key, new PositionHelper(lat,lon) );
     }
 
     public Map<String, Object> getTowers() {
         return towers;
     }
 
-    public void addTower(String key, double lat, double lon){
+    public void addTower(String key, double lat, double lon) {
         this.towers.put( key, new PositionHelper(lat,lon) );
-    }
-
-    public Map<String, Object> getCommonInventory() {
-        return commonInventory;
-    }
-
-    public void addMaterialToCommonInventory() {
-        if (this.commonInventory.get("materials") != null ){
-            this.commonInventory.put("materials", 0);
-        }
-        int numOfMaterials = (int) this.commonInventory.get("materials");
-        numOfMaterials++;
-        this.commonInventory.put("materials", numOfMaterials);
-    }
-
-    public void addLetterToCommonInventory(String key, String letter) {
-        this.commonInventory.put(key, letter);
-    }
-
-    public Map<String, Object> getGameArea() {
-        return gameArea;
-    }
-
-    public void setGameArea(double lat, double lon, double radius){
-        this.initialPositions.put( "center", new PositionHelper(lat,lon) );
-        this.initialPositions.put( "radius", radius );
     }
 
     public Date getStartTime() {
@@ -111,5 +108,37 @@ public class GameInfo {
 
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
+    }
+
+    public PositionHelper getStartLocation() {
+        return startLocation;
+    }
+
+    public void setStartLocation(PositionHelper startLocation) {
+        this.startLocation = startLocation;
+    }
+
+    public void setHintsInventory(long hintsInventory) {
+        this.hintsInventory = hintsInventory;
+    }
+
+    public void addHintToInvetory(){
+        hintsInventory = hintsInventory+1;
+    }
+
+    public long getHintsInventory() {
+        return hintsInventory;
+    }
+
+    public void addMaterialToInvetory(){
+        materialsInventory = materialsInventory+1 ;
+    }
+
+    public long getMaterialsInventory() {
+        return materialsInventory;
+    }
+
+    public void setMaterialsInventory(long materialsInventory) {
+        this.materialsInventory = materialsInventory;
     }
 }
