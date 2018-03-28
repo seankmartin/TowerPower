@@ -1,6 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
-
-import android.net.Uri;
+package com.adwitiya.cs7cs3.towerpower.Helpers;
 
 /**
  * Created by Stefano on 20/03/2018.

@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-
+import com.adwitiya.cs7cs3.towerpower.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;

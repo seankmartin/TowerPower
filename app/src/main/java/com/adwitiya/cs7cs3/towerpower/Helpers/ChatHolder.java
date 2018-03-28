@@ -1,8 +1,5 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Helpers;
 
-import android.graphics.PorterDuff;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.RotateDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -12,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.adwitiya.cs7cs3.towerpower.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -66,11 +64,5 @@ public class ChatHolder extends RecyclerView.ViewHolder {
             mRightArrow.setVisibility(View.GONE);
             mMessageContainer.setGravity(Gravity.START);
         }
-
-       /* ((GradientDrawable) mMessage.getBackground()).setColor(color);
-        ((RotateDrawable) mLeftArrow.getBackground()).getDrawable()
-                .setColorFilter(color, PorterDuff.Mode.SRC);
-        ((RotateDrawable) mRightArrow.getBackground()).getDrawable()
-                .setColorFilter(color, PorterDuff.Mode.SRC);*/
     }
 }

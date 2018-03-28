@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,8 +22,8 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
+import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
@@ -192,8 +192,12 @@ public class ToolsActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_chat) {
+            // Navigate to Map Activity
+            Intent Chat = new Intent(getApplicationContext(),ChatActivity.class);
+            startActivity(Chat);
+        }
+        else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {
             // Navigate to Send Activity

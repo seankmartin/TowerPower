@@ -48,6 +48,8 @@
     <string name="label_firebase_ui">FirebaseUI Auth</string>
     <string name="desc_firebase_ui">Use the FirebaseUI-Android library to authenticate with Firebase.</string>
     <string name="sign">Sign In</string>
+    <string name="chat_header">Team Chat</string>
+    <string name="livemaps_header">Live Maps</string>
 
     <string name="hint_user_id">User ID</string>
     <string name="get_custom_token">Get Token</string>

@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Activity;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,25 +20,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
-import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.afollestad.materialdialogs.DialogAction;
+import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.Helpers.LocationsFull;
+import com.adwitiya.cs7cs3.towerpower.Helpers.PositionHelper;
+import com.adwitiya.cs7cs3.towerpower.R;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.internal.MDTintHelper;
-import com.afollestad.materialdialogs.internal.ThemeSingleton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -435,8 +429,12 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             startActivity(HomeIntent);
         }else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-            Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
+            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.Activity.ToolsActivity.class);
             startActivity(ToolsActivity);
+        } else if (id == R.id.nav_chat) {
+            // Navigate to Map Activity
+            Intent Chat = new Intent(getApplicationContext(),ChatActivity.class);
+            startActivity(Chat);
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {

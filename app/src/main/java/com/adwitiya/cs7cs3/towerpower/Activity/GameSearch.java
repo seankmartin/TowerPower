@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Activity;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +33,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.Helpers.PositionHelper;
+import com.adwitiya.cs7cs3.towerpower.R;
+import com.adwitiya.cs7cs3.towerpower.Helpers.UserInfo;
+import com.adwitiya.cs7cs3.towerpower.Helpers.UserMatchingInfo;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -43,7 +48,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -57,8 +61,6 @@ import com.mapbox.services.android.telemetry.location.LostLocationEngine;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import com.squareup.picasso.Picasso;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -557,8 +559,12 @@ public class GameSearch extends AppCompatActivity
 
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-            Intent ToolsActivity = new Intent(getApplicationContext(),ToolsActivity.class);
+            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.Activity.ToolsActivity.class);
             startActivity(ToolsActivity);
+        } else if (id == R.id.nav_chat) {
+            // Navigate to Map Activity
+            Intent Chat = new Intent(getApplicationContext(),ChatActivity.class);
+            startActivity(Chat);
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
         } else if (id == R.id.nav_send) {

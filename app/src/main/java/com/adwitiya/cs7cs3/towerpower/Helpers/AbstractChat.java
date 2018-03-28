@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Helpers;
 
 /**
  * Common interface for chat messages, helps share code between RTDB and Firestore examples.

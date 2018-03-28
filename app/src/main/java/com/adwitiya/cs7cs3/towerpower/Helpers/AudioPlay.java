@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower;
+package com.adwitiya.cs7cs3.towerpower.Helpers;
 
 /**
  * Created by stackoverflow on 16/03/2018.
