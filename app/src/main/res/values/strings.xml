@@ -20,6 +20,10 @@
     <string name="def_role">Random</string>
     <string name="btn_confirm">Confirm</string>
     <string name="btn_refuse">Refuse</string>
+    <string name="title_snip_base">Your Base</string>
+    <string name="title_snip_tower">Tower</string>
+    <string name="title_snip_material">Material</string>
+    <string name="title_snip_hint">Hint</string>
 
 
     <string name="label_google_sign_in">Firebase + Google Sign In</string>

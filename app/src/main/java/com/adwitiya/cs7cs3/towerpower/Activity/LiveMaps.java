@@ -661,8 +661,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                     Toast.LENGTH_SHORT).show();
         }
         else {
-            Toast.makeText(LiveMaps.this, "Collected",
-                    Toast.LENGTH_SHORT).show();
             LatLng pos = marker.getPosition();
             //String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
             String deletedKey = gameInfo.collect(pos.getLatitude(), pos.getLongitude());
@@ -670,6 +668,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 Toast.makeText(LiveMaps.this, "This is not a collectible", Toast.LENGTH_SHORT).show();
             }
             else{
+                Toast.makeText(LiveMaps.this, "Collected",
+                        Toast.LENGTH_SHORT).show();
                 DocumentReference ref =  mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
                 if ( deletedKey.contains("hint") ) {
                     WriteBatch batch = mDatabase.batch();
@@ -715,7 +715,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             String snip = key;
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.map_title))
+                    .title(getString(R.string.title_snip_base))
                     .snippet(snip)
                     .icon(icon));
         }
@@ -726,7 +726,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             String snip = key;
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.map_title))
+                    .title(getString(R.string.title_snip_hint))
                     .snippet(snip)
                     .icon(icon));
         }
@@ -737,7 +737,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             String snip = key;
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.map_title))
+                    .title(getString(R.string.title_snip_material))
                     .snippet(snip)
                     .icon(icon));
         }
@@ -748,7 +748,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             String snip = key;
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.map_title))
+                    .title(getString(R.string.title_snip_tower))
                     .snippet(snip)
                     .icon(icon));
         }
