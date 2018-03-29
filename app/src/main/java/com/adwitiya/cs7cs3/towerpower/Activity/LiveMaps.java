@@ -649,9 +649,19 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             if (tmp != null) gameInfo.setMaterialsInventory( (long) tmp);
 
         }
-        Object startTimeMap =  gameInfoMap.get("start_time");
-        Date startTime = (Date) startTimeMap;
-        if (startTimeMap != null) gameInfo.setStartTime(startTime);
+        tmp =  gameInfoMap.get("start_time");
+        Date startTime = null;
+        if (tmp != null) {
+            startTime = (Date) tmp;
+            gameInfo.setStartTime(startTime);
+        }
+        tmp =  gameInfoMap.get("time_bonus");
+        long timeBonus = -1;
+        if (tmp != null) {
+            timeBonus = (long) tmp;
+            gameInfo.setTimeBonus(timeBonus);
+        }
+
 
     }
 
@@ -669,25 +679,44 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             //String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
             String deletedKey = gameInfo.collect(pos.getLatitude(), pos.getLongitude());
             if (deletedKey == null){
-                Toast.makeText(LiveMaps.this, "This is not a collectible", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LiveMaps.this, "Action not allowed", Toast.LENGTH_SHORT).show();
             }
             else{
-                Toast.makeText(LiveMaps.this, "Collected",
-                        Toast.LENGTH_SHORT).show();
                 DocumentReference ref =  mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
                 if ( deletedKey.contains("hint") ) {
                     WriteBatch batch = mDatabase.batch();
                     batch.update(ref, "hints." + deletedKey, FieldValue.delete());
                     batch.update(ref, "inventory.hints",gameInfo.getHintsInventory());
                     batch.commit();
-
+                    Toast.makeText(LiveMaps.this, "Hint collected",
+                            Toast.LENGTH_SHORT).show();
                 }
                 else if ( deletedKey.contains("material") ) {
                     WriteBatch batch = mDatabase.batch();
                     batch.update(ref,"materials." + deletedKey, FieldValue.delete());
-                    Log.e(TAG, "Mateirals. "+gameInfo.getMaterialsInventory());
                     batch.update(ref,"inventory.materials",gameInfo.getMaterialsInventory());
                     batch.commit();
+                    Toast.makeText(LiveMaps.this, "Material collected",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else if ( deletedKey.contains("base") ) {
+                    //update inventory layout and update bonus on DB
+                    WriteBatch batch = mDatabase.batch();
+                    batch.update(ref,"inventory.materials", gameInfo.getMaterialsInventory());
+                    gameInfo.setTimeBonus( gameInfo.getTimeBonus()+1 );
+                    batch.update(ref,"time_bonus", gameInfo.getTimeBonus());
+                    batch.commit();
+                    Toast.makeText(LiveMaps.this, "Base fortified!",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else if ( deletedKey.contains("tower") ) {
+                    //update inventory layout and update bonus on DB
+                    WriteBatch batch = mDatabase.batch();
+                    batch.update(ref,"inventory.hints", gameInfo.getHintsInventory());
+                    batch.update(ref,"towers." + deletedKey, FieldValue.delete());
+                    batch.commit();
+                    Toast.makeText(LiveMaps.this, "Tower destroyed!",
+                            Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -710,7 +739,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     public MapboxMap addMarkersToMap(MapboxMap map) {
-
+        ///DO NOT INVOKE IF GAME DOES NOT EXIST
         Bitmap bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_base);
         Icon icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
 

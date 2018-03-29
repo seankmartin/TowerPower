@@ -22,6 +22,7 @@ public class GameInfo {
     private Map<String, Object>  towers;
     private long materialsInventory;
     private long hintsInventory;
+    private long timeBonus;
     private PositionHelper startLocation;
     private Date startTime;
 
@@ -86,9 +87,26 @@ public class GameInfo {
             pos = (PositionHelper) this.getBases().get(key);
             if (pos.getLatitude() == lat && pos.getLongitude() == lon) {
                 finalKey = key;
-                if ( this.getMaterialsInventory()> 5){
-                    this.getMaterials().remove(finalKey);
-                    addMaterialToInvetory();
+                if ( this.getMaterialsInventory() >= 5){
+                    this.useMaterials();
+                    //this.getBases().remove(finalKey);
+                }
+                else {
+                    finalKey = null;
+                }
+                return finalKey;
+            }
+        }
+        for ( String key : this.getTowers().keySet() ){
+            pos = (PositionHelper) this.getTowers().get(key);
+            if (pos.getLatitude() == lat && pos.getLongitude() == lon) {
+                finalKey = key;
+                if ( this.getHintsInventory() >= 4){
+                    this.useHints();
+                    this.getTowers().remove(finalKey);
+                }
+                else {
+                    finalKey = null;
                 }
                 return finalKey;
             }
@@ -137,6 +155,10 @@ public class GameInfo {
         hintsInventory = hintsInventory+1;
     }
 
+    public void useHints (){
+        hintsInventory = hintsInventory - 4;
+    }
+
     public long getHintsInventory() {
         return hintsInventory;
     }
@@ -151,5 +173,17 @@ public class GameInfo {
 
     public void setMaterialsInventory(long materialsInventory) {
         this.materialsInventory = materialsInventory;
+    }
+
+    public void useMaterials(){
+        materialsInventory = materialsInventory - 5;
+    }
+
+    public long getTimeBonus() {
+        return timeBonus;
+    }
+
+    public void setTimeBonus(long timeBonus) {
+        this.timeBonus = timeBonus;
     }
 }
