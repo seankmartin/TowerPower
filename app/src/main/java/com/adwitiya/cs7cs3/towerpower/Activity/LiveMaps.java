@@ -91,6 +91,7 @@ import com.squareup.picasso.Picasso;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -648,6 +649,9 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             if (tmp != null) gameInfo.setMaterialsInventory( (long) tmp);
 
         }
+        Object startTimeMap =  gameInfoMap.get("start_time");
+        Date startTime = (Date) startTimeMap;
+        if (startTimeMap != null) gameInfo.setStartTime(startTime);
 
     }
 

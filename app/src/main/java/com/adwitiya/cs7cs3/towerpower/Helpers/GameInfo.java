@@ -82,6 +82,17 @@ public class GameInfo {
                 return finalKey;
             }
         }
+        for ( String key : this.getBases().keySet() ){
+            pos = (PositionHelper) this.getBases().get(key);
+            if (pos.getLatitude() == lat && pos.getLongitude() == lon) {
+                finalKey = key;
+                if ( this.getMaterialsInventory()> 5){
+                    this.getMaterials().remove(finalKey);
+                    addMaterialToInvetory();
+                }
+                return finalKey;
+            }
+        }
 
         return finalKey;
     }
