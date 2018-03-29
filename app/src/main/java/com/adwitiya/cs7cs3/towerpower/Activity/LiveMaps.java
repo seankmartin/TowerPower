@@ -124,6 +124,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_maps);
+        setTitle("Hello StackOverflow");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(Color.BLACK);
         setSupportActionBar(toolbar);
@@ -385,12 +386,17 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -548,39 +554,44 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     public void initialRenderMarkers(){
-        CollectionReference colRef = mDatabase.collection("teams").document(teamID).collection("games");
-        colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (DocumentSnapshot doc : task.getResult()) {
-                        if (doc != null && doc.exists()) {
-                            gameID = doc.getId();
-                            gameInfo = new GameInfo();
-                            decodeGameDBStructure(doc);
+        if ( teamID != null ) {
+            CollectionReference colRef = mDatabase.collection("teams").document(teamID).collection("games");
+            colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            if (doc != null && doc.exists()) {
+                                gameID = doc.getId();
+                                gameInfo = new GameInfo();
+                                decodeGameDBStructure(doc);
+                            }
+                            break; // N.B. THIS IS TO RETRIEVE ONLY ONE
                         }
-                        break; // N.B. THIS IS TO RETRIEVE ONLY ONE
+                        mapView.getMapAsync(new OnMapReadyCallback() {
+                            @Override
+                            public void onMapReady(MapboxMap mapboxMap) {
+                                map = addMarkersToMap(mapboxMap);
+
+                                // handle onClick of Markers
+                                map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+                                    @Override
+                                    public boolean onMarkerClick(@NonNull Marker marker) {
+                                        return collect(marker);
+                                    }
+                                });
+                                enableLocationPlugin();
+                                updateLocations();
+                            }
+                        });
                     }
-                    mapView.getMapAsync(new OnMapReadyCallback() {
-                        @Override
-                        public void onMapReady(MapboxMap mapboxMap) {
-                            map = addMarkersToMap(mapboxMap);
-
-                            // handle onClick of Markers
-                            map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
-                                @Override
-                                public boolean onMarkerClick(@NonNull Marker marker) {
-                                    return collect(marker);
-                                }
-                            });
-                            enableLocationPlugin();
-                            updateLocations();
-                        }
-                    });
                 }
-            }
-        });
-
+            });
+        }
+        else{
+            Toast.makeText(LiveMaps.this, "You are not in a game",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     public void decodeGameDBStructure(DocumentSnapshot doc){
@@ -656,13 +667,31 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             gameInfo.setStartTime(startTime);
         }
         tmp =  gameInfoMap.get("time_bonus");
-        long timeBonus = -1;
+        long timeBonus = 0;
         if (tmp != null) {
             timeBonus = (long) tmp;
-            gameInfo.setTimeBonus(timeBonus);
+            DocumentReference ref =  mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
+            if ( timeBonus == -1 && !gameInfo.isWon()){
+                gameInfo.setTimeBonus(-2);
+                gameInfo.setWon(true);
+                WriteBatch batch = mDatabase.batch();
+                batch.update(ref, "time_bonus", gameInfo.getTimeBonus());
+                batch.commit();
+                Toast.makeText(LiveMaps.this, "You won the game!",
+                        Toast.LENGTH_SHORT).show();
+            }
+            else if ( timeBonus == -2 && !gameInfo.isWon()){
+                gameInfo.setTimeBonus(-3);
+                gameInfo.setWon(true);
+                Toast.makeText(LiveMaps.this, "You won the game!",
+                        Toast.LENGTH_SHORT).show();
+                ref.delete();
+                mDatabase.collection("teams").document(teamID).delete();
+            }
+            else{
+                gameInfo.setTimeBonus(timeBonus);
+            }
         }
-
-
     }
 
 
@@ -710,17 +739,30 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                             Toast.LENGTH_SHORT).show();
                 }
                 else if ( deletedKey.contains("tower") ) {
-                    //update inventory layout and update bonus on DB
                     WriteBatch batch = mDatabase.batch();
-                    batch.update(ref,"inventory.hints", gameInfo.getHintsInventory());
-                    batch.update(ref,"towers." + deletedKey, FieldValue.delete());
+                    batch.update(ref, "inventory.hints", gameInfo.getHintsInventory());
+                    batch.update(ref, "towers." + deletedKey, FieldValue.delete());
                     batch.commit();
                     Toast.makeText(LiveMaps.this, "Tower destroyed!",
                             Toast.LENGTH_SHORT).show();
-                }
+                    if ( isGameWon() ){
+                        gameInfo.setTimeBonus(-1);
+                        gameInfo.setWon(true);
+                        Toast.makeText(LiveMaps.this, "You won the game!",
+                                Toast.LENGTH_SHORT).show();
+                        ref.update("time_bonus", gameInfo.getTimeBonus());
+                        //ref.delete();
+                        //mDatabase.collection("teams").document(teamID).delete();
+                    }
 
+                }
             }
         }
+        return false;
+    }
+
+    public boolean isGameWon (){
+        if (gameInfo.getTowers().size() == 0) return true;
         return false;
     }
 
@@ -742,74 +784,83 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         ///DO NOT INVOKE IF GAME DOES NOT EXIST
         Bitmap bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_base);
         Icon icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
-
-        for (String key : gameInfo.getBases().keySet() ){
-            PositionHelper position = (PositionHelper)  gameInfo.getBases().get(key);
-            String snip = key;
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.title_snip_base))
-                    .snippet(snip)
-                    .icon(icon));
-        }
-        bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_hint);
-        icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
-        for (String key : gameInfo.getHints().keySet() ){
-            PositionHelper position = (PositionHelper)  gameInfo.getHints().get(key);
-            String snip = key;
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.title_snip_hint))
-                    .snippet(snip)
-                    .icon(icon));
-        }
-        bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_material);
-        icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
-        for (String key : gameInfo.getMaterials().keySet() ){
-            PositionHelper position = (PositionHelper)  gameInfo.getMaterials().get(key);
-            String snip = key;
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.title_snip_material))
-                    .snippet(snip)
-                    .icon(icon));
-        }
-        bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_tower);
-        icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
-        for (String key : gameInfo.getTowers().keySet() ){
-            PositionHelper position = (PositionHelper)  gameInfo.getTowers().get(key);
-            String snip = key;
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(position.getLatitude(), position.getLongitude()))
-                    .title(getString(R.string.title_snip_tower))
-                    .snippet(snip)
-                    .icon(icon));
+        if (gameInfo != null) {
+            for (String key : gameInfo.getBases().keySet()) {
+                PositionHelper position = (PositionHelper) gameInfo.getBases().get(key);
+                String snip = key;
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                        .title(getString(R.string.title_snip_base))
+                        .snippet(snip)
+                        .icon(icon));
+            }
+            bitmap = getBitmapFromVectorDrawable(this, R.drawable.ic_hint);
+            icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+            for (String key : gameInfo.getHints().keySet()) {
+                PositionHelper position = (PositionHelper) gameInfo.getHints().get(key);
+                String snip = key;
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                        .title(getString(R.string.title_snip_hint))
+                        .snippet(snip)
+                        .icon(icon));
+            }
+            bitmap = getBitmapFromVectorDrawable(this, R.drawable.ic_material);
+            icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+            for (String key : gameInfo.getMaterials().keySet()) {
+                PositionHelper position = (PositionHelper) gameInfo.getMaterials().get(key);
+                String snip = key;
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                        .title(getString(R.string.title_snip_material))
+                        .snippet(snip)
+                        .icon(icon));
+            }
+            bitmap = getBitmapFromVectorDrawable(this, R.drawable.ic_tower);
+            icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
+            for (String key : gameInfo.getTowers().keySet()) {
+                PositionHelper position = (PositionHelper) gameInfo.getTowers().get(key);
+                String snip = key;
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(position.getLatitude(), position.getLongitude()))
+                        .title(getString(R.string.title_snip_tower))
+                        .snippet(snip)
+                        .icon(icon));
+            }
         }
         return map;
     }
 
     public void updateLocations(){
-        DocumentReference colRef = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
-        colRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
+        if (teamID != null && gameID!= null) {
+            DocumentReference colRef = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
+            if (colRef != null) {
+                colRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
 
-                if (snapshot != null && snapshot.exists()) {
+                        if (snapshot != null && snapshot.exists()) {
 
-                    decodeGameDBStructure(snapshot);
-                    map.clear();
-                    map = addMarkersToMap(map);
-                    Log.d(TAG, gameInfo.toString());
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
+                            decodeGameDBStructure(snapshot);
+                            map.clear();
+                            map = addMarkersToMap(map);
+                            Log.d(TAG, gameInfo.toString());
+                        } else {
+                            Log.d(TAG, "Current data: null");
+                        }
+                    }
+                });
             }
-        });
+        }
+        else{
+            Toast.makeText(LiveMaps.this, "You are not in a game",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {

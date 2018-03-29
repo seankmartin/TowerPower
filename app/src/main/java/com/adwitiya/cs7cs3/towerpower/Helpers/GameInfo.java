@@ -23,6 +23,7 @@ public class GameInfo {
     private long materialsInventory;
     private long hintsInventory;
     private long timeBonus;
+    private boolean won;
     private PositionHelper startLocation;
     private Date startTime;
 
@@ -35,6 +36,7 @@ public class GameInfo {
         this.materialsInventory = 0;
         this.hintsInventory = 0;
         this.startTime = new Date();
+        this.won = false;
     }
 
     public Map<String, Object> getInitialPosition() {
@@ -185,5 +187,13 @@ public class GameInfo {
 
     public void setTimeBonus(long timeBonus) {
         this.timeBonus = timeBonus;
+    }
+
+    public boolean isWon() {
+        return won;
+    }
+
+    public void setWon(boolean won) {
+        this.won = won;
     }
 }

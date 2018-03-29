@@ -203,7 +203,7 @@ public class GameSearch extends AppCompatActivity
     public void onClick(View view) {
         FirebaseUser gameuser = FirebaseAuth.getInstance().getCurrentUser();
         int BtnID = view.getId();
-        if (BtnID == R.id.SearchGame) {
+        if (BtnID == R.id.SearchGame && gameuser!=null) {
             String photoUrlstr = "";
             TextView tvu = (TextView) findViewById(R.id.user_name);
             String user_name = "";
