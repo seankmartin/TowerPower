@@ -35,10 +35,14 @@ import com.squareup.picasso.Picasso;
 
 public class FirebaseLogin extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
-    View mDecorView;
     private static final Class[] CLASSES = new Class[]{
             EmailPasswordActivity.class,
             GoogleSignInActivity.class
+    };
+
+    private static final int[] CLASS_NAME_IDS = new int[]{
+            R.string.label_emailpassword,
+            R.string.label_google_sign_in
     };
 
     private static final int[] DESCRIPTION_IDS = new int[] {
@@ -67,7 +71,9 @@ public class FirebaseLogin extends AppCompatActivity
         ListView listView = findViewById(R.id.list_view);
 
         MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
+        adapter.setNameIds(CLASS_NAME_IDS);
         adapter.setDescriptionIds(DESCRIPTION_IDS);
+
 
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
@@ -114,6 +120,7 @@ public class FirebaseLogin extends AppCompatActivity
 
         private Context mContext;
         private Class[] mClasses;
+        private int[] mNameIds;
         private int[] mDescriptionIds;
 
         public MyArrayAdapter(Context context, int resource, Class[] objects) {
@@ -132,7 +139,7 @@ public class FirebaseLogin extends AppCompatActivity
                 view = inflater.inflate(android.R.layout.simple_list_item_2, null);
             }
 
-            ((TextView) view.findViewById(android.R.id.text1)).setText(mClasses[position].getSimpleName());
+            ((TextView) view.findViewById(android.R.id.text1)).setText(mNameIds[position]);
             ((TextView) view.findViewById(android.R.id.text2)).setText(mDescriptionIds[position]);
 
             return view;
@@ -140,6 +147,9 @@ public class FirebaseLogin extends AppCompatActivity
 
         public void setDescriptionIds(int[] descriptionIds) {
             mDescriptionIds = descriptionIds;
+        }
+        public void setNameIds(int[] namesIds) {
+            mNameIds = namesIds;
         }
     }
 

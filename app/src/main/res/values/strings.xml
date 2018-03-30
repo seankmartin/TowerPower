@@ -26,8 +26,8 @@
     <string name="title_snip_hint">Hint</string>
 
 
-    <string name="label_google_sign_in">Firebase + Google Sign In</string>
-    <string name="desc_google_sign_in">Use a Google Sign In credential to authenticate with Firebase.</string>
+    <string name="label_google_sign_in">Google Login</string>
+    <string name="desc_google_sign_in">Join Tower Power with Google.</string>
     <string name="sound_toogle">Sounds</string>
     <string name="tools_act">Tools</string>
 
@@ -37,8 +37,8 @@
     <string name="label_twitter_login">Firebase + Twitter Login</string>
     <string name="desc_twitter_login">Use a Twitter Login credential to authenticate with Firebase.</string>
 
-    <string name="label_emailpassword">Email/Password Authentication</string>
-    <string name="desc_emailpassword">Use an email and password to authenticate with Firebase.</string>
+    <string name="label_emailpassword">Email and Password Login</string>
+    <string name="desc_emailpassword">Use an email and password to join Tower Power.</string>
 
     <string name="label_phone_auth">Phone Number Authentication</string>
     <string name="desc_phone_auth">Use a phone number to authenticate with Firebase.</string>
