@@ -532,7 +532,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
     private void retrieveMultiLocFromDB() {
         //mDatabase.collection("teams").document()
-        String notFoundMsg = "TeamInfo not found";
+        String notFoundMsg = "You are not in a game.";
         SharedPreferences TeamPrefs = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE);
         teamID = TeamPrefs.getString("TeamID", notFoundMsg);
 
@@ -584,9 +584,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 }
             });
         }
-        }
-        else{
-            Toast.makeText(LiveMaps.this, "You are not in a game",
+        } else{
+            Toast.makeText(LiveMaps.this, "You are not in a game.",
                     Toast.LENGTH_LONG).show();
         }
     }
