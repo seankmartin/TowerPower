@@ -88,16 +88,16 @@ public class GameSearch extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_search);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         // Code to check fire base Auth instance
@@ -109,7 +109,7 @@ public class GameSearch extends AppCompatActivity
         //Start of Mapbox Async Task
         //This task needs to be finished before activating the Search Game Button
         Mapbox.getInstance(this,getString(R.string.mapbox_key));
-        mapView = (MapView)findViewById(R.id.map_game);
+        mapView = findViewById(R.id.map_game);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -119,15 +119,15 @@ public class GameSearch extends AppCompatActivity
                 }
         });
         //Make Search Button Disabled
-        Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+        Button SearchBtn = findViewById(R.id.SearchGame);
         SearchBtn.setEnabled(false);
         findViewById(R.id.SearchGame).setOnClickListener(GameSearch.this);
 
         //Disable some buttons
-        Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+        Button acceptBtn = findViewById(R.id.acceptBtn);
         acceptBtn.setEnabled(false);
         acceptBtn.setOnClickListener(GameSearch.this);
-        Button refuseBtn = (Button)findViewById(R.id.declineBtn);
+        Button refuseBtn = findViewById(R.id.declineBtn);
         refuseBtn.setEnabled(false);
         refuseBtn.setOnClickListener(GameSearch.this);
     }
@@ -149,9 +149,9 @@ public class GameSearch extends AppCompatActivity
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(user_name);
             UserEmail.setText(email);
             if (photoUrl != null) {
@@ -160,9 +160,9 @@ public class GameSearch extends AppCompatActivity
         }
         if (user == null){
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(getText(R.string.def_user));
             UserEmail.setText(getText(R.string.def_email));
             ProfilePic.setImageResource(R.drawable.def_icon);
@@ -184,16 +184,16 @@ public class GameSearch extends AppCompatActivity
             // The user's ID, unique to the Firebase project. Do NOT use this value to
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
-            TextView UserName = (TextView) findViewById(R.id.playername1);
-            ImageView ProfilePic = (ImageView) findViewById(R.id.playerimg1);
+            TextView UserName = findViewById(R.id.playername1);
+            ImageView ProfilePic = findViewById(R.id.playerimg1);
             UserName.setText(user_name);
             if (photoUrl != null) {
                 Picasso.with(this).load(photoUrl).into(ProfilePic);
             }
         }
         if (user == null){
-            TextView UserName = (TextView) findViewById(R.id.playername1);
-            ImageView ProfilePic = (ImageView) findViewById(R.id.playerimg1);
+            TextView UserName = findViewById(R.id.playername1);
+            ImageView ProfilePic = findViewById(R.id.playerimg1);
             UserName.setText(getText(R.string.def_user));
             ProfilePic.setImageResource(R.drawable.def_icon);
         }
@@ -205,7 +205,7 @@ public class GameSearch extends AppCompatActivity
         int BtnID = view.getId();
         if (BtnID == R.id.SearchGame && gameuser!=null) {
             String photoUrlstr = "";
-            TextView tvu = (TextView) findViewById(R.id.user_name);
+            TextView tvu = findViewById(R.id.user_name);
             String user_name = "";
             Uri pUrl = gameuser.getPhotoUrl();
             if (pUrl != null)
@@ -216,7 +216,7 @@ public class GameSearch extends AppCompatActivity
             if (tvu !=null){
                 user_name = tvu.getText().toString();
             }
-            TextView tvemail = (TextView) findViewById(R.id.user_email);
+            TextView tvemail = findViewById(R.id.user_email);
             String user_email = "";
             if (tvemail !=null){
                 user_email = tvemail.getText().toString();
@@ -232,7 +232,7 @@ public class GameSearch extends AppCompatActivity
                         false, user_id, user_email, user_name, "random", 0,photoUrlstr);
                 //Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
                 mDatabase.collection("matchmaking").document(user_id).set(user);
-                Button searchBtn = (Button)findViewById(R.id.SearchGame);
+                Button searchBtn = findViewById(R.id.SearchGame);
                 searchBtn.setEnabled(false);
 
 
@@ -266,7 +266,7 @@ public class GameSearch extends AppCompatActivity
         else if (BtnID == R.id.acceptBtn){
             Intent gameIntent = new Intent(getApplicationContext(),LiveMaps.class);
             startActivity(gameIntent);
-            Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+            Button acceptBtn = findViewById(R.id.acceptBtn);
             acceptBtn.setEnabled(false);
         }
     }
@@ -331,9 +331,9 @@ public class GameSearch extends AppCompatActivity
 
 
                                 if (i==0){
-                                    TextView player_name = (TextView)findViewById(R.id.playername1);
-                                    TextView player_role = (TextView)findViewById(R.id.playerrole1);
-                                    ImageView profile_pic = (ImageView) findViewById(R.id.playerimg1);
+                                    TextView player_name = findViewById(R.id.playername1);
+                                    TextView player_role = findViewById(R.id.playerrole1);
+                                    ImageView profile_pic = findViewById(R.id.playerimg1);
 
                                     player_name.setText(user.getName());
                                     player_role.setText(user.getRole());
@@ -345,9 +345,9 @@ public class GameSearch extends AppCompatActivity
                                 }
 
                                 if (i==1){
-                                    TextView player_name = (TextView)findViewById(R.id.playername2);
-                                    TextView player_role = (TextView)findViewById(R.id.playerrole2);
-                                    ImageView profile_pic = (ImageView) findViewById(R.id.playerimg2);
+                                    TextView player_name = findViewById(R.id.playername2);
+                                    TextView player_role = findViewById(R.id.playerrole2);
+                                    ImageView profile_pic = findViewById(R.id.playerimg2);
 
                                     player_name.setText(user.getName());
                                     player_role.setText(user.getRole());
@@ -357,9 +357,9 @@ public class GameSearch extends AppCompatActivity
                                 }
 
                                 if (i==2){
-                                    TextView player_name = (TextView)findViewById(R.id.playername3);
-                                    TextView player_role = (TextView)findViewById(R.id.playerrole3);
-                                    ImageView profile_pic = (ImageView) findViewById(R.id.playerimg3);
+                                    TextView player_name = findViewById(R.id.playername3);
+                                    TextView player_role = findViewById(R.id.playerrole3);
+                                    ImageView profile_pic = findViewById(R.id.playerimg3);
 
                                     player_name.setText(user.getName());
                                     player_role.setText(user.getRole());
@@ -367,7 +367,7 @@ public class GameSearch extends AppCompatActivity
                                         Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
                                     }
                                     //Enable the confirm button when all the players are found
-                                    Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+                                    Button acceptBtn = findViewById(R.id.acceptBtn);
                                     acceptBtn.setEnabled(true);
                                 }
                                 //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
@@ -391,7 +391,7 @@ public class GameSearch extends AppCompatActivity
         if (location != null) {
             originLocation = location;
             //Whenever we get the location we enable the button
-            Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+            Button SearchBtn = findViewById(R.id.SearchGame);
             SearchBtn.setEnabled(true);
             locationEngine.removeLocationEngineListener(this);
         }
@@ -465,7 +465,7 @@ public class GameSearch extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -475,7 +475,7 @@ public class GameSearch extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         switchSound();
@@ -582,7 +582,7 @@ public class GameSearch extends AppCompatActivity
             builder.show();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -613,7 +613,7 @@ public class GameSearch extends AppCompatActivity
         Location lastLocation = locationEngine.getLastLocation();
         if (lastLocation != null) {
             originLocation = lastLocation;
-            Button SearchBtn = (Button)findViewById(R.id.SearchGame);
+            Button SearchBtn = findViewById(R.id.SearchGame);
             SearchBtn.setEnabled(true);
         } else {
             locationEngine.addLocationEngineListener(this);

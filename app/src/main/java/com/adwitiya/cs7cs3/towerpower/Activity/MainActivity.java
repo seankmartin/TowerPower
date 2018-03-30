@@ -46,12 +46,12 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         setAnimation(this);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
     }
@@ -64,16 +64,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setAnimation(Context context){
-        DestroyIV = (ImageView)findViewById(R.id.destroy_logo);
-        DestroyTV = (TextView)findViewById(R.id.destroy_text);
+        DestroyIV = findViewById(R.id.destroy_logo);
+        DestroyTV = findViewById(R.id.destroy_text);
 
-        CollectIV = (ImageView)findViewById(R.id.collect_logo);
-        CollectTV = (TextView)findViewById(R.id.collect_text);
+        CollectIV = findViewById(R.id.collect_logo);
+        CollectTV = findViewById(R.id.collect_text);
 
-        DefendIV = (ImageView)findViewById(R.id.defend_logo);
-        DefendTV = (TextView)findViewById(R.id.defend_text);
+        DefendIV = findViewById(R.id.defend_logo);
+        DefendTV = findViewById(R.id.defend_text);
 
-        group5 = (TextView)findViewById(R.id.group_text);
+        group5 = findViewById(R.id.group_text);
 
 
         Animation anim = AnimationUtils.loadAnimation(this,R.anim.transition);
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         setAnimation(this);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         switchSound();
@@ -158,9 +158,9 @@ public class MainActivity extends AppCompatActivity
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(user_name);
             UserEmail.setText(email);
             if (photoUrl != null) {
@@ -169,9 +169,9 @@ public class MainActivity extends AppCompatActivity
         }
         if (user == null){
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(getText(R.string.def_user));
             UserEmail.setText(getText(R.string.def_email));
             ProfilePic.setImageResource(R.drawable.def_icon);
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         //hideSystemUI();
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -266,7 +266,7 @@ public class MainActivity extends AppCompatActivity
             builder.show();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

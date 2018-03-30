@@ -76,8 +76,8 @@ public class ChatActivity extends AppCompatActivity
 
     private void getChatReference(NavigationView view ) {
         View header = view.getHeaderView(0);
-        TextView UserName = (TextView) header.findViewById(R.id.user_name);
-        TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
+        TextView UserName = header.findViewById(R.id.user_name);
+        TextView UserEmail = header.findViewById(R.id.user_email);
         if(!UserName.getText().equals(getText(R.string.def_user)))
         {
         String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -134,12 +134,12 @@ public class ChatActivity extends AppCompatActivity
         setContentView(R.layout.activity_chat);
         ButterKnife.bind(this);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         mRecyclerView.setHasFixedSize(true);
@@ -155,7 +155,7 @@ public class ChatActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         switchSound();
@@ -199,9 +199,9 @@ public class ChatActivity extends AppCompatActivity
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(user_name);
             UserEmail.setText(email);
             if (photoUrl != null) {
@@ -210,9 +210,9 @@ public class ChatActivity extends AppCompatActivity
         }
         if (user == null){
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(getText(R.string.def_user));
             UserEmail.setText(getText(R.string.def_email));
             ProfilePic.setImageResource(R.drawable.def_icon);
@@ -373,7 +373,7 @@ public class ChatActivity extends AppCompatActivity
             builder.show();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

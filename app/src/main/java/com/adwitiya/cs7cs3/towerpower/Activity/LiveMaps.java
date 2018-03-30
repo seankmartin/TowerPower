@@ -124,7 +124,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_maps);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(Color.BLACK);
         setSupportActionBar(toolbar);
 
@@ -134,13 +134,13 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
         requestEnableGPS();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
 
@@ -148,7 +148,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         MapBoxZoom = getString(R.string.mapbox_zoom);
         final Double MapBoxZoomDouble = Double.parseDouble(MapBoxZoom);
         Mapbox.getInstance(this,getString(R.string.mapbox_key));
-        mapView = (MapView)findViewById(R.id.map);
+        mapView = findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);
         //give a marker location to the map
         //Get the positions from DB
@@ -156,7 +156,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         retrieveMultiLocFromDB();
 
         //Handle ShowInventory Button Click
-        FloatingActionButton showInventory = (FloatingActionButton)findViewById(R.id.showInv);
+        FloatingActionButton showInventory = findViewById(R.id.showInv);
         showInventory.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 showCustomView();
@@ -178,11 +178,11 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (gameInfo != null) {
             View CustomView = dialog.getCustomView();
             materials = "" + gameInfo.getMaterialsInventory();
-            TextView collectedMaterials = (TextView) CustomView.findViewById(R.id.collectedMaterials);
+            TextView collectedMaterials = CustomView.findViewById(R.id.collectedMaterials);
             collectedMaterials.setText(materials);
 
             hints = "" + gameInfo.getHintsInventory();
-            TextView collectedHints = (TextView) CustomView.findViewById(R.id.collectedHints);
+            TextView collectedHints = CustomView.findViewById(R.id.collectedHints);
             collectedHints.setText(hints);
         }
     }
@@ -363,7 +363,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     @Override
     public void onBackPressed() {
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -401,7 +401,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     @Override
     protected void onResume() {
         super.onResume();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         mapView.onResume();
@@ -484,7 +484,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             builder.show();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -505,9 +505,9 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(user_name);
             UserEmail.setText(email);
             if (photoUrl != null) {
@@ -516,9 +516,9 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         if (user == null){
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(getText(R.string.def_user));
             UserEmail.setText(getText(R.string.def_email));
             ProfilePic.setImageResource(R.drawable.def_icon);
@@ -595,7 +595,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
         Map<String, Object> basesMap = (Map<String, Object>) gameInfoMap.get("bases");
         if (basesMap != null) {
-            basesMap = (Map<String, Object>) basesMap;
+            basesMap = basesMap;
             for ( String key : basesMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) basesMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -607,7 +607,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> hintsMap = (Map<String, Object>) gameInfoMap.get("hints");
         if (hintsMap != null) {
-            hintsMap = (Map<String, Object>) hintsMap;
+            hintsMap = hintsMap;
             for ( String key : hintsMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) hintsMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -619,7 +619,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> towersMap = (Map<String, Object>) gameInfoMap.get("towers");
         if (towersMap != null) {
-            towersMap = (Map<String, Object>) towersMap;
+            towersMap = towersMap;
             for ( String key : towersMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) towersMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -631,7 +631,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> materialsMap = (Map<String, Object>) gameInfoMap.get("materials");
         if (materialsMap != null) {
-            materialsMap = (Map<String, Object>) materialsMap;
+            materialsMap = materialsMap;
             for ( String key : materialsMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) materialsMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -643,7 +643,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> inventoryMap = (Map<String, Object>) gameInfoMap.get("inventory");
         if (inventoryMap != null) {
-            inventoryMap = (Map<String, Object>) inventoryMap;
+            inventoryMap = inventoryMap;
             tmp = inventoryMap.get("hints");
             if (tmp != null) gameInfo.setHintsInventory( (long) tmp);
             tmp = inventoryMap.get("materials");
@@ -752,8 +752,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     public boolean isGameWon (){
-        if (gameInfo.getTowers().size() == 0) return true;
-        return false;
+        return gameInfo.getTowers().size() == 0;
     }
 
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {

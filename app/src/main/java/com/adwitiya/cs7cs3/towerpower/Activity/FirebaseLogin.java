@@ -53,16 +53,16 @@ public class FirebaseLogin extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_firebase_login);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         // Code to check fire base Auth instance
@@ -95,9 +95,9 @@ public class FirebaseLogin extends AppCompatActivity
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(user_name);
             UserEmail.setText(email);
             if (photoUrl != null) {
@@ -106,9 +106,9 @@ public class FirebaseLogin extends AppCompatActivity
         }
         if (user == null){
             View header = view.getHeaderView(0);
-            TextView UserName = (TextView) header.findViewById(R.id.user_name);
-            TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-            ImageView ProfilePic = (ImageView) header.findViewById(R.id.profile_pic);
+            TextView UserName = header.findViewById(R.id.user_name);
+            TextView UserEmail = header.findViewById(R.id.user_email);
+            ImageView ProfilePic = header.findViewById(R.id.profile_pic);
             UserName.setText(getText(R.string.def_user));
             UserEmail.setText(getText(R.string.def_email));
             ProfilePic.setImageResource(R.drawable.def_icon);
@@ -170,7 +170,7 @@ public class FirebaseLogin extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -180,7 +180,7 @@ public class FirebaseLogin extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         switchSound();
@@ -284,7 +284,7 @@ public class FirebaseLogin extends AppCompatActivity
             builder.show();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
