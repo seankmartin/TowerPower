@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -13,8 +13,8 @@ import com.google.firebase.auth.AuthResult;
 /**
  * Notifies the user of sign in successes or failures beyond the lifecycle of an activity.
  */
-public class SignInResultNotifier implements OnCompleteListener<AuthResult> {
-    private Context mContext;
+class SignInResultNotifier implements OnCompleteListener<AuthResult> {
+    private final Context mContext;
 
     public SignInResultNotifier(Context context) {
         mContext = context.getApplicationContext();

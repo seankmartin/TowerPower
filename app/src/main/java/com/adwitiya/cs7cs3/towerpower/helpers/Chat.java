@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 
 import com.google.firebase.firestore.IgnoreExtraProperties;

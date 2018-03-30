@@ -1,11 +1,10 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -19,7 +18,6 @@ public class ChatHolder extends RecyclerView.ViewHolder {
     private final FrameLayout mLeftArrow;
     private final FrameLayout mRightArrow;
     private final RelativeLayout mMessageContainer;
-    private final LinearLayout mMessage;
     private final int mGreen300;
     private final int mGray300;
 
@@ -30,7 +28,6 @@ public class ChatHolder extends RecyclerView.ViewHolder {
         mLeftArrow = itemView.findViewById(R.id.left_arrow);
         mRightArrow = itemView.findViewById(R.id.right_arrow);
         mMessageContainer = itemView.findViewById(R.id.message_container);
-        mMessage = itemView.findViewById(R.id.message);
         mGreen300 = ContextCompat.getColor(itemView.getContext(), R.color.black);
         mGray300 = ContextCompat.getColor(itemView.getContext(), R.color.grey_300);
     }
@@ -54,12 +51,10 @@ public class ChatHolder extends RecyclerView.ViewHolder {
     private void setIsSender(boolean isSender) {
         final int color;
         if (isSender) {
-            color = mGreen300;
             mLeftArrow.setVisibility(View.GONE);
             mRightArrow.setVisibility(View.VISIBLE);
             mMessageContainer.setGravity(Gravity.END);
         } else {
-            color = mGray300;
             mLeftArrow.setVisibility(View.VISIBLE);
             mRightArrow.setVisibility(View.GONE);
             mMessageContainer.setGravity(Gravity.START);

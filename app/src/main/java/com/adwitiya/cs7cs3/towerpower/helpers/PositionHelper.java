@@ -1,10 +1,6 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
-
-/**
- * Created by stackoverflow on 14/03/2018.
- */
 
 public class PositionHelper {
     private double latitude;

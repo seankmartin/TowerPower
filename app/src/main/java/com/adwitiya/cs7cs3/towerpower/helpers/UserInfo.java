@@ -1,8 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
-
-/**
- * Created by Stefano on 27/03/2018.
- */
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 public class UserInfo {
     private long afkTimeOut;

@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -6,14 +6,10 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by stackoverflow on 21/03/2018.
- */
-
-public class LocationsFull {
+class LocationsFull {
     private double latitude;
     private double longitude;
-    Map<String, Object> generated_locations;
+    private final Map<String, Object> generated_locations;
    // ArrayList<LatLng> generated_locations;
 
     public LocationsFull(){
@@ -28,7 +24,7 @@ public class LocationsFull {
         this.generated_locations = new HashMap<>();
     }
 
-    public double getLatitude() {
+    private double getLatitude() {
         return latitude;
     }
 
@@ -36,7 +32,7 @@ public class LocationsFull {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    private double getLongitude() {
         return longitude;
     }
 
@@ -44,7 +40,7 @@ public class LocationsFull {
         this.longitude = longitude;
     }
 
-    public Map<String, Object> getGenerated_locations() {
+    private Map<String, Object> getGenerated_locations() {
         return generated_locations;
     }
 

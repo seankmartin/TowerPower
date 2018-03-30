@@ -1,5 +1,6 @@
-package com.adwitiya.cs7cs3.towerpower.Activity;
+package com.adwitiya.cs7cs3.towerpower.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,11 +34,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
-import com.adwitiya.cs7cs3.towerpower.Helpers.PositionHelper;
+import com.adwitiya.cs7cs3.towerpower.helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.helpers.PositionHelper;
 import com.adwitiya.cs7cs3.towerpower.R;
-import com.adwitiya.cs7cs3.towerpower.Helpers.UserInfo;
-import com.adwitiya.cs7cs3.towerpower.Helpers.UserMatchingInfo;
+import com.adwitiya.cs7cs3.towerpower.helpers.UserInfo;
+import com.adwitiya.cs7cs3.towerpower.helpers.UserMatchingInfo;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -77,8 +78,8 @@ public class GameSearch extends AppCompatActivity
     private Location originLocation;    private static final String TAG = LiveMaps.class.getSimpleName();
     private MapView mapView;
     private MapboxMap map;
-    String user_id;
-    Uri photoUrl;
+    private String user_id;
+    private Uri photoUrl;
     private String teamID;
     private ArrayList<UserInfo> team;
 
@@ -111,13 +112,10 @@ public class GameSearch extends AppCompatActivity
         Mapbox.getInstance(this,getString(R.string.mapbox_key));
         mapView = findViewById(R.id.map_game);
         mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                map = mapboxMap;
-                enableLocationPlugin();
-                }
-        });
+        mapView.getMapAsync(mapboxMap -> {
+            map = mapboxMap;
+            enableLocationPlugin();
+            });
         //Make Search Button Disabled
         Button SearchBtn = findViewById(R.id.SearchGame);
         SearchBtn.setEnabled(false);
@@ -229,7 +227,7 @@ public class GameSearch extends AppCompatActivity
                 //Fill Player Profile Infos
                 fillYourInfo();
                 UserMatchingInfo user = new UserMatchingInfo(new PositionHelper(originLocation.getLatitude(), originLocation.getLongitude()),
-                        false, user_id, user_email, user_name, "random", 0,photoUrlstr);
+                        user_id, user_email, user_name, photoUrlstr);
                 //Log.d(TAG,user.getEmail() + user.getName() + user.getLocation());
                 mDatabase.collection("matchmaking").document(user_id).set(user);
                 Button searchBtn = findViewById(R.id.SearchGame);
@@ -237,28 +235,24 @@ public class GameSearch extends AppCompatActivity
 
 
                 DocumentReference userRef = mDatabase.collection("users").document(user_id);
-                userRef.addSnapshotListener(GameSearch.this, new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
+                userRef.addSnapshotListener(GameSearch.this, (snapshot, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
 
-                        if (snapshot != null && snapshot.exists()) {
-                            //Log.d(TAG, "Current data: " + snapshot.getData());
-                            Map<String, Object> map = snapshot.getData();
-                            Object tmp = map.get("team_id");
-                            if (tmp != null) teamID = (String) tmp;
-                            //Get TeamInfo ID and Store it to SharedPreference
-                            SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
-                            editor_team.putString("TeamID",teamID);
-                            editor_team.commit();
-                            getTeam();
-                        } else {
-                            Log.d(TAG, "Current data: null");
-                        }
+                    if (snapshot != null && snapshot.exists()) {
+                        //Log.d(TAG, "Current data: " + snapshot.getData());
+                        Map<String, Object> map = snapshot.getData();
+                        Object tmp = map.get("team_id");
+                        if (tmp != null) teamID = (String) tmp;
+                        //Get TeamInfo ID and Store it to SharedPreference
+                        SharedPreferences.Editor editor_team = getSharedPreferences("com.adwitiya.cs7cs3.towerpower", MODE_PRIVATE).edit();
+                        editor_team.putString("TeamID",teamID);
+                        editor_team.apply();
+                        getTeam();
+                    } else {
+                        Log.d(TAG, "Current data: null");
                     }
                 });
             }
@@ -271,114 +265,111 @@ public class GameSearch extends AppCompatActivity
         }
     }
 
-    public void getTeam(){
+    private void getTeam(){
         DocumentReference teamRef = mDatabase.collection("teams").document(teamID);
-        teamRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
+        teamRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
 
-                    team = new ArrayList<>();
+                team = new ArrayList<>();
 
-                    if (document != null && document.exists()) {
-                        Map<String, Object> map = document.getData();
-                        int i;
-                        for (i=0; i<3; i++) {
-                            Object tmp = map.get("user"+i);
-                            Map<String, Object> userMap = null;
-                            if (tmp != null){
-                                userMap = (Map<String, Object>) tmp;
-                                long afkTimeOut=-1;
-                                tmp = userMap.get("afkTimeOut");
-                                if (tmp != null) afkTimeOut = (long) tmp;
-                                String email="";
-                                tmp = userMap.get("email");
-                                if (tmp != null) email = (String) tmp;
-                                Map<String, Object> locationMap=null;
-                                tmp = userMap.get("location");
-                                if (tmp != null) locationMap = (Map<String, Object>) tmp;
-                                tmp = locationMap.get("latitude");
-                                double lat = 0;
-                                if (tmp != null) lat = (double) tmp;
-                                tmp = locationMap.get("longitude");
-                                double lng = 0;
-                                if (tmp != null) lng = (double) tmp;
+                if (document != null && document.exists()) {
+                    Map<String, Object> map = document.getData();
+                    int i;
+                    for (i=0; i<3; i++) {
+                        Object tmp = map.get("user"+i);
+                        Map<String, Object> userMap;
+                        if (tmp != null){
+                            userMap = (Map<String, Object>) tmp;
+                            long afkTimeOut=-1;
+                            tmp = userMap.get("afkTimeOut");
+                            if (tmp != null) afkTimeOut = (long) tmp;
+                            String email="";
+                            tmp = userMap.get("email");
+                            if (tmp != null) email = (String) tmp;
+                            Map<String, Object> locationMap=null;
+                            tmp = userMap.get("location");
+                            if (tmp != null) locationMap = (Map<String, Object>) tmp;
+                            tmp = locationMap.get("latitude");
+                            double lat = 0;
+                            if (tmp != null) lat = (double) tmp;
+                            tmp = locationMap.get("longitude");
+                            double lng = 0;
+                            if (tmp != null) lng = (double) tmp;
 
-                                String name="";
-                                tmp = userMap.get("name");
-                                if (tmp != null) name = (String) tmp;
-                                String response="";
-                                tmp = userMap.get("response");
-                                if (tmp != null) response = (String) tmp;
-                                String role="";
-                                tmp = userMap.get("role");
-                                if (tmp != null) role = (String) tmp;
-                                boolean shouldSearchAgain=false;
-                                tmp = userMap.get("shouldSearchAgain");
-                                if (tmp != null) shouldSearchAgain = (boolean) tmp;
-                                String userID="";
-                                tmp = userMap.get("userID");
-                                if (tmp != null) userID = (String) tmp;
+                            String name="";
+                            tmp = userMap.get("name");
+                            if (tmp != null) name = (String) tmp;
+                            String response="";
+                            tmp = userMap.get("response");
+                            if (tmp != null) response = (String) tmp;
+                            String role="";
+                            tmp = userMap.get("role");
+                            if (tmp != null) role = (String) tmp;
+                            boolean shouldSearchAgain=false;
+                            tmp = userMap.get("shouldSearchAgain");
+                            if (tmp != null) shouldSearchAgain = (boolean) tmp;
+                            String userID="";
+                            tmp = userMap.get("userID");
+                            if (tmp != null) userID = (String) tmp;
 
-                                String photoUrl="";
-                                tmp = userMap.get("photoUrl");
-                                if (tmp != null) photoUrl = (String) tmp;
+                            String photoUrl="";
+                            tmp = userMap.get("photoUrl");
+                            if (tmp != null) photoUrl = (String) tmp;
 
-                                UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID,photoUrl );
-                                team.add(user);
+                            UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID,photoUrl );
+                            team.add(user);
 
 
 
-                                if (i==0){
-                                    TextView player_name = findViewById(R.id.playername1);
-                                    TextView player_role = findViewById(R.id.playerrole1);
-                                    ImageView profile_pic = findViewById(R.id.playerimg1);
+                            if (i==0){
+                                TextView player_name = findViewById(R.id.playername1);
+                                TextView player_role = findViewById(R.id.playerrole1);
+                                ImageView profile_pic = findViewById(R.id.playerimg1);
 
-                                    player_name.setText(user.getName());
-                                    player_role.setText(user.getRole());
+                                player_name.setText(user.getName());
+                                player_role.setText(user.getRole());
 
-                                    if (user.getPhotoUrl() != "") {
-                                        Log.d(TAG, "ahahahahhaha"+user.getPhotoUrl());
-                                        Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
-                                    }
+                                if (user.getPhotoUrl() != "") {
+                                    Log.d(TAG, "ahahahahhaha"+user.getPhotoUrl());
+                                    Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
                                 }
-
-                                if (i==1){
-                                    TextView player_name = findViewById(R.id.playername2);
-                                    TextView player_role = findViewById(R.id.playerrole2);
-                                    ImageView profile_pic = findViewById(R.id.playerimg2);
-
-                                    player_name.setText(user.getName());
-                                    player_role.setText(user.getRole());
-                                    if (user.getPhotoUrl() != "") {
-                                        Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
-                                    }
-                                }
-
-                                if (i==2){
-                                    TextView player_name = findViewById(R.id.playername3);
-                                    TextView player_role = findViewById(R.id.playerrole3);
-                                    ImageView profile_pic = findViewById(R.id.playerimg3);
-
-                                    player_name.setText(user.getName());
-                                    player_role.setText(user.getRole());
-                                    if (user.getPhotoUrl() != "") {
-                                        Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
-                                    }
-                                    //Enable the confirm button when all the players are found
-                                    Button acceptBtn = findViewById(R.id.acceptBtn);
-                                    acceptBtn.setEnabled(true);
-                                }
-                                //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                             }
+
+                            if (i==1){
+                                TextView player_name = findViewById(R.id.playername2);
+                                TextView player_role = findViewById(R.id.playerrole2);
+                                ImageView profile_pic = findViewById(R.id.playerimg2);
+
+                                player_name.setText(user.getName());
+                                player_role.setText(user.getRole());
+                                if (user.getPhotoUrl() != "") {
+                                    Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
+                                }
+                            }
+
+                            if (i==2){
+                                TextView player_name = findViewById(R.id.playername3);
+                                TextView player_role = findViewById(R.id.playerrole3);
+                                ImageView profile_pic = findViewById(R.id.playerimg3);
+
+                                player_name.setText(user.getName());
+                                player_role.setText(user.getRole());
+                                if (user.getPhotoUrl() != "") {
+                                    Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
+                                }
+                                //Enable the confirm button when all the players are found
+                                Button acceptBtn = findViewById(R.id.acceptBtn);
+                                acceptBtn.setEnabled(true);
+                            }
+                            //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                         }
-                    } else {
-                        Log.d(TAG, "No such document");
                     }
                 } else {
-                    Log.d(TAG, "get failed with ", task.getException());
+                    Log.d(TAG, "No such document");
                 }
+            } else {
+                Log.d(TAG, "get failed with ", task.getException());
             }
         });
     }
@@ -429,8 +420,8 @@ public class GameSearch extends AppCompatActivity
 
     public static class MyArrayAdapter extends ArrayAdapter<Class> {
 
-        private Context mContext;
-        private Class[] mClasses;
+        private final Context mContext;
+        private final Class[] mClasses;
         private int[] mDescriptionIds;
 
         public MyArrayAdapter(Context context, int resource, Class[] objects) {
@@ -495,11 +486,11 @@ public class GameSearch extends AppCompatActivity
         Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
 
         //Theme song
-        if (soundPref == true) {
-            AudioPlay.playAudio(this,R.raw.theme);
+        if (soundPref) {
+            AudioPlay.playAudio(this);
 
         }
-        else if (soundPref == false){
+        else if (!soundPref){
             AudioPlay.stopAudio();
         }
     }
@@ -547,7 +538,7 @@ public class GameSearch extends AppCompatActivity
 
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.Activity.ToolsActivity.class);
+            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.activities.ToolsActivity.class);
             startActivity(ToolsActivity);
         } else if (id == R.id.nav_chat) {
             // Navigate to Map Activity
@@ -560,25 +551,17 @@ public class GameSearch extends AppCompatActivity
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enter Email ID");
             final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
-            builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String m_Text = input.getText().toString();
-                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                            "mailto",m_Text, null));
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
-                    startActivity(Intent.createChooser(emailIntent, "Send email..."));
-                }
+            builder.setPositiveButton("Send", (dialog, which) -> {
+                String m_Text = input.getText().toString();
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto",m_Text, null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
+                startActivity(Intent.createChooser(emailIntent, "Send email..."));
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
             builder.show();
         }
 

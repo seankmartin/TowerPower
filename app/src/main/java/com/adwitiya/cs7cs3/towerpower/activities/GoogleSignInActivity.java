@@ -1,5 +1,6 @@
-package com.adwitiya.cs7cs3.towerpower.Activity;
+package com.adwitiya.cs7cs3.towerpower.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -76,6 +77,7 @@ public class GoogleSignInActivity extends BaseActivity implements
     // [END on_start_check_user]
 
     // [START onactivityresult]
+    @SuppressLint("LogNotTimber")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -99,6 +101,7 @@ public class GoogleSignInActivity extends BaseActivity implements
     // [END onactivityresult]
 
     // [START auth_with_google]
+    @SuppressLint("LogNotTimber")
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
         // [START_EXCLUDE silent]
@@ -107,25 +110,22 @@ public class GoogleSignInActivity extends BaseActivity implements
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
-                            updateUI(null);
-                        }
-
-                        // [START_EXCLUDE]
-                        hideProgressDialog();
-                        // [END_EXCLUDE]
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signInWithCredential:success");
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        updateUI(user);
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signInWithCredential:failure", task.getException());
+                        Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
+                        updateUI(null);
                     }
+
+                    // [START_EXCLUDE]
+                    hideProgressDialog();
+                    // [END_EXCLUDE]
                 });
     }
     // [END auth_with_google]
@@ -143,12 +143,7 @@ public class GoogleSignInActivity extends BaseActivity implements
 
         // Google sign out
         mGoogleSignInClient.signOut().addOnCompleteListener(this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        updateUI(null);
-                    }
-                });
+                task -> updateUI(null));
     }
 
     private void revokeAccess() {
@@ -157,12 +152,7 @@ public class GoogleSignInActivity extends BaseActivity implements
 
         // Google revoke access
         mGoogleSignInClient.revokeAccess().addOnCompleteListener(this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        updateUI(null);
-                    }
-                });
+                task -> updateUI(null));
     }
 
     private void updateUI(FirebaseUser user) {

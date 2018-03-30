@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:text="@string/mat_text"
         android:textColor="#80000000"
-        android:textSize="20dp" />
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/collectedMaterials"
@@ -18,7 +18,7 @@
         android:layout_marginTop="4dp"
         android:text="@string/mat_text_def"
         android:textColor="#000000"
-        android:textSize="15dp" />
+        android:textSize="15sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,7 +26,7 @@
         android:layout_marginTop="18dp"
         android:text="@string/let_text"
         android:textColor="#80000000"
-        android:textSize="20dp" />
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/collectedHints"
@@ -35,7 +35,7 @@
         android:layout_marginTop="4dp"
         android:text="@string/let_text_def"
         android:textColor="#000000"
-        android:textSize="15dp" />
+        android:textSize="15sp" />
 
 
 </LinearLayout>

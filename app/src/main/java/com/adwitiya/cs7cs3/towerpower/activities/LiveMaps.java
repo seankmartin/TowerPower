@@ -1,5 +1,6 @@
-package com.adwitiya.cs7cs3.towerpower.Activity;
+package com.adwitiya.cs7cs3.towerpower.activities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,10 +38,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
-import com.adwitiya.cs7cs3.towerpower.Helpers.GameInfo;
-import com.adwitiya.cs7cs3.towerpower.Helpers.LocationsFull;
-import com.adwitiya.cs7cs3.towerpower.Helpers.PositionHelper;
+import com.adwitiya.cs7cs3.towerpower.helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.helpers.GameInfo;
+import com.adwitiya.cs7cs3.towerpower.helpers.PositionHelper;
 import com.adwitiya.cs7cs3.towerpower.R;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -97,28 +97,23 @@ import static java.lang.StrictMath.cos;
 import static java.lang.StrictMath.sin;
 
 public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener,LocationEngineListener, PermissionsListener {
-    String MapBoxZoom;
+    private String MapBoxZoom;
     private MapView mapView;
     // variables for adding location layer
     private MapboxMap map;
-    private EditText passwordInput;
     private PermissionsManager permissionsManager;
     private LocationLayerPlugin locationPlugin;
     private LocationEngine locationEngine;
     private Location originLocation;
-    private List<PositionHelper> positionList;
     private static final String TAG = LiveMaps.class.getSimpleName();
     private GoogleApiClient googleApiClient;
-    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+    private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private FirebaseFirestore mDatabase;
-    private LocationsFull gameLocations;
-    private FirebaseUser user;
     private GameInfo gameInfo;
     private String teamID;
     private String gameID;
-    private int hint=0, material=0;
-    long gameduration = 600000;
-    CountDownTimer timer;
+    private final long gameduration = 600000;
+    private CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,21 +147,17 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         mapView.onCreate(savedInstanceState);
         //give a marker location to the map
         //Get the positions from DB
-        positionList = new ArrayList<>();
+        List<PositionHelper> positionList = new ArrayList<>();
         retrieveMultiLocFromDB();
 
         //Handle ShowInventory Button Click
         FloatingActionButton showInventory = findViewById(R.id.showInv);
-        showInventory.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                showCustomView();
-            }
-        });
+        showInventory.setOnClickListener(v -> showCustomView());
     }
 
     //Inventory menu function
-    public void showCustomView() {
-        String materials = "", hints = "";
+    private void showCustomView() {
+        String materials, hints;
 
         MaterialDialog dialog =
                 new MaterialDialog.Builder(this)
@@ -202,32 +193,29 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
         PendingResult<LocationSettingsResult> result =
                 LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                final LocationSettingsStates state = result.getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can initialize location
-                        // requests here.
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied. But could be fixed by showing the user
-                        // a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            status.startResolutionForResult(LiveMaps.this, REQUEST_CHECK_SETTINGS);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way to fix the
-                        // settings so we won't show the dialog.
-                        break;
-                }
+        result.setResultCallback(result1 -> {
+            final Status status = result1.getStatus();
+            final LocationSettingsStates state = result1.getLocationSettingsStates();
+            switch (status.getStatusCode()) {
+                case LocationSettingsStatusCodes.SUCCESS:
+                    // All location settings are satisfied. The client can initialize location
+                    // requests here.
+                    break;
+                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                    // Location settings are not satisfied. But could be fixed by showing the user
+                    // a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        status.startResolutionForResult(LiveMaps.this, REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException e) {
+                        // Ignore the error.
+                    }
+                    break;
+                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                    // Location settings are not satisfied. However, we have no way to fix the
+                    // settings so we won't show the dialog.
+                    break;
             }
         });
     }
@@ -416,10 +404,10 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
 
         //Theme song
-        if (soundPref == true) {
-           AudioPlay.playAudio(this,R.raw.theme);
+        if (soundPref) {
+           AudioPlay.playAudio(this);
         }
-        else if (soundPref == false){
+        else if (!soundPref){
            AudioPlay.stopAudio();
         }
     }
@@ -449,7 +437,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             startActivity(HomeIntent);
         }else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.Activity.ToolsActivity.class);
+            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.activities.ToolsActivity.class);
             startActivity(ToolsActivity);
         } else if (id == R.id.nav_chat) {
             // Navigate to Map Activity
@@ -462,25 +450,17 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enter Email ID");
             final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
-            builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String m_Text = input.getText().toString();
-                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                            "mailto",m_Text, null));
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
-                    startActivity(Intent.createChooser(emailIntent, "Send email..."));
-                }
+            builder.setPositiveButton("Send", (dialog, which) -> {
+                String m_Text = input.getText().toString();
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto",m_Text, null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
+                startActivity(Intent.createChooser(emailIntent, "Send email..."));
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
             builder.show();
         }
 
@@ -491,7 +471,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
     private void checkFirebaseAuth(NavigationView view){
         // Code to check fire base Auth instance
-        user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // Name, email address, and profile photo Url
             String user_name = user.getDisplayName();
@@ -539,42 +519,31 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             }
     }
 
-    public void initialRenderMarkers(){
+    private void initialRenderMarkers(){
         if ( teamID != null) {
             CollectionReference colRef = mDatabase.collection("teams").document(teamID).collection("games");
             if (colRef != null) {
-            colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        for (DocumentSnapshot doc : task.getResult()) {
-                            if (doc != null && doc.exists()) {
-                                gameID = doc.getId();
-                                gameInfo = new GameInfo();
-                                decodeGameDBStructure(doc);
-                                if (timer != null) {
-                                    timer.cancel();
-                                }
-                                createGameTimer();
+            colRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    for (DocumentSnapshot doc : task.getResult()) {
+                        if (doc != null && doc.exists()) {
+                            gameID = doc.getId();
+                            gameInfo = new GameInfo();
+                            decodeGameDBStructure(doc);
+                            if (timer != null) {
+                                timer.cancel();
                             }
-                            break; // N.B. THIS IS TO RETRIEVE ONLY ONE
+                            createGameTimer();
                         }
-                        mapView.getMapAsync(new OnMapReadyCallback() {
-                            @Override
-                            public void onMapReady(MapboxMap mapboxMap) {
-                                map = renderMap(mapboxMap);
-                                // handle onClick of Markers
-                                map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
-                                    @Override
-                                    public boolean onMarkerClick(@NonNull Marker marker) {
-                                        return collect(marker);
-                                    }
-                                });
-                                enableLocationPlugin();
-                                updateLocations();
-                            }
-                        });
+                        break; // N.B. THIS IS TO RETRIEVE ONLY ONE
                     }
+                    mapView.getMapAsync(mapboxMap -> {
+                        map = renderMap(mapboxMap);
+                        // handle onClick of Markers
+                        map.setOnMarkerClickListener(marker -> collect(marker));
+                        enableLocationPlugin();
+                        updateLocations();
+                    });
                 }
             });
         }
@@ -584,7 +553,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
 
-    public void decodeGameDBStructure(DocumentSnapshot doc){
+    private void decodeGameDBStructure(DocumentSnapshot doc){
         Map<String, Object> gameInfoMap = doc.getData();
         double lat = -1, lon = -1;
         Object tmp = gameInfoMap.get("latitude");
@@ -595,7 +564,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
         Map<String, Object> basesMap = (Map<String, Object>) gameInfoMap.get("bases");
         if (basesMap != null) {
-            basesMap = basesMap;
             for ( String key : basesMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) basesMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -607,7 +575,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> hintsMap = (Map<String, Object>) gameInfoMap.get("hints");
         if (hintsMap != null) {
-            hintsMap = hintsMap;
             for ( String key : hintsMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) hintsMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -619,7 +586,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> towersMap = (Map<String, Object>) gameInfoMap.get("towers");
         if (towersMap != null) {
-            towersMap = towersMap;
             for ( String key : towersMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) towersMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -631,7 +597,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> materialsMap = (Map<String, Object>) gameInfoMap.get("materials");
         if (materialsMap != null) {
-            materialsMap = materialsMap;
             for ( String key : materialsMap.keySet() ){
                 Map<String, Object> locationMap = (Map<String, Object>) materialsMap.get(key);
                 tmp = locationMap.get("latitude");
@@ -643,7 +608,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
         Map<String, Object> inventoryMap = (Map<String, Object>) gameInfoMap.get("inventory");
         if (inventoryMap != null) {
-            inventoryMap = inventoryMap;
             tmp = inventoryMap.get("hints");
             if (tmp != null) gameInfo.setHintsInventory( (long) tmp);
             tmp = inventoryMap.get("materials");
@@ -651,19 +615,19 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
         }
         tmp =  gameInfoMap.get("start_time");
-        Date startTime = null;
+        Date startTime;
         if (tmp != null) {
             startTime = (Date) tmp;
             gameInfo.setStartTime(startTime);
         }
         tmp =  gameInfoMap.get("time_bonus");
-        long timeBonus = 0;
+        long timeBonus;
         if (tmp != null) {
             timeBonus = (long) tmp;
             DocumentReference ref = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
             if (timeBonus == -1 && !gameInfo.isWon()) {
                 gameInfo.setTimeBonus(-2);
-                gameInfo.setWon(true);
+                gameInfo.setWon();
                 WriteBatch batch = mDatabase.batch();
                 batch.update(ref, "time_bonus", gameInfo.getTimeBonus());
                 batch.commit();
@@ -674,7 +638,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 }
             } else if (timeBonus == -2 && !gameInfo.isWon()) {
                 gameInfo.setTimeBonus(-3);
-                gameInfo.setWon(true);if ( isGameWon() ) {
+                gameInfo.setWon();if ( isGameWon() ) {
                     setTitle("You Win !");
                 } else {
                     setTitle("You Lost !");
@@ -688,7 +652,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
 
 
-    public boolean collect(Marker marker){
+    private boolean collect(Marker marker){
         LatLng currentMarker = marker.getPosition();
         LatLng myPosition = new LatLng(originLocation.getLatitude(), originLocation.getLongitude());
         double distance = myPosition.distanceTo(currentMarker);
@@ -740,7 +704,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                             Toast.LENGTH_SHORT).show();
                     if ( isGameWon() ){
                         gameInfo.setTimeBonus(-1);
-                        gameInfo.setWon(true);
+                        gameInfo.setWon();
                         setTitle("You Win !");
                         ref.update("time_bonus", gameInfo.getTimeBonus());
                     }
@@ -751,11 +715,11 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         return false;
     }
 
-    public boolean isGameWon (){
+    private boolean isGameWon(){
         return gameInfo.getTowers().size() == 0;
     }
 
-    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+    private static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable drawable = ContextCompat.getDrawable(context, drawableId);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             drawable = (DrawableCompat.wrap(drawable)).mutate();
@@ -769,81 +733,73 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         return bitmap;
     }
 
-    public MapboxMap renderMap(MapboxMap map) {
+    private MapboxMap renderMap(MapboxMap map) {
         ///DO NOT INVOKE IF GAME DOES NOT EXIST
         Bitmap bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_base);
         Icon icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
         if (gameInfo != null) {
             for (String key : gameInfo.getBases().keySet()) {
                 PositionHelper position = (PositionHelper) gameInfo.getBases().get(key);
-                String snip = key;
                 map.addMarker(new MarkerOptions()
                         .position(new LatLng(position.getLatitude(), position.getLongitude()))
                         .title(getString(R.string.title_snip_base))
-                        .snippet(snip)
+                        .snippet(key)
                         .icon(icon));
             }
             bitmap = getBitmapFromVectorDrawable(this, R.drawable.ic_hint);
             icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
             for (String key : gameInfo.getHints().keySet()) {
                 PositionHelper position = (PositionHelper) gameInfo.getHints().get(key);
-                String snip = key;
                 map.addMarker(new MarkerOptions()
                         .position(new LatLng(position.getLatitude(), position.getLongitude()))
                         .title(getString(R.string.title_snip_hint))
-                        .snippet(snip)
+                        .snippet(key)
                         .icon(icon));
             }
             bitmap = getBitmapFromVectorDrawable(this, R.drawable.ic_material);
             icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
             for (String key : gameInfo.getMaterials().keySet()) {
                 PositionHelper position = (PositionHelper) gameInfo.getMaterials().get(key);
-                String snip = key;
                 map.addMarker(new MarkerOptions()
                         .position(new LatLng(position.getLatitude(), position.getLongitude()))
                         .title(getString(R.string.title_snip_material))
-                        .snippet(snip)
+                        .snippet(key)
                         .icon(icon));
             }
             bitmap = getBitmapFromVectorDrawable(this, R.drawable.ic_tower);
             icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
             for (String key : gameInfo.getTowers().keySet()) {
                 PositionHelper position = (PositionHelper) gameInfo.getTowers().get(key);
-                String snip = key;
                 map.addMarker(new MarkerOptions()
                         .position(new LatLng(position.getLatitude(), position.getLongitude()))
                         .title(getString(R.string.title_snip_tower))
-                        .snippet(snip)
+                        .snippet(key)
                         .icon(icon));
             }
         }
         if (gameInfo != null)
-            drawCircle(map, gameInfo.getStartLocation(), Color.BLACK, 500);
+            drawCircle(map, gameInfo.getStartLocation());
         return map;
     }
 
-    public void updateLocations(){
+    private void updateLocations(){
         if (teamID != null && gameID!= null) {
             DocumentReference colRef = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
             if (colRef != null) {
-                colRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
+                colRef.addSnapshotListener((snapshot, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
 
-                        if (snapshot != null && snapshot.exists()) {
+                    if (snapshot != null && snapshot.exists()) {
 
-                            decodeGameDBStructure(snapshot);
-                            map.clear();
-                            map = renderMap(map);
-                            Log.d(TAG, gameInfo.toString());
-                        } else {
-                            Log.d(TAG, "Current data: null");
-                        }
+                        decodeGameDBStructure(snapshot);
+                        map.clear();
+                        map = renderMap(map);
+                        Log.d(TAG, gameInfo.toString());
+                    } else {
+                        Log.d(TAG, "Current data: null");
                     }
                 });
             }
@@ -854,11 +810,11 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
 
-    public static void drawCircle(MapboxMap map, PositionHelper position, int color, double radiusMeters) {
+    private static void drawCircle(MapboxMap map, PositionHelper position) {
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.BLACK);
         polylineOptions.width(3.0f); // change the line width here
-        polylineOptions.addAll(getCirclePoints(position, radiusMeters));
+        polylineOptions.addAll(getCirclePoints(position, (double) 500));
         map.addPolyline(polylineOptions);
     }
 
@@ -886,7 +842,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         polygons.add(polygons.get(0));
         return polygons;
     }
-    public void createGameTimer(){
+    private void createGameTimer(){
         // Game Timer Logic
         Date current = new Date();
         long millisecond = (current.getTime() - gameInfo.getStartTime().getTime());
@@ -909,12 +865,12 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             public void onFinish() {
                 if ( !gameInfo.isWon() ) {
                     gameInfo.setTimeBonus(-1);
-                    gameInfo.setWon(true);
+                    gameInfo.setWon();
                     DocumentReference ref = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
                     ref.update("time_bonus", gameInfo.getTimeBonus());
                 }
                 if ( !isGameWon() ) {
-                    gameInfo.setWon(true);
+                    gameInfo.setWon();
                     setTitle("You Lost !");
                 }
             }

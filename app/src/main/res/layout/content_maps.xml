@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.adwitiya.cs7cs3.towerpower.Activity.LiveMaps">
+    tools:context="com.adwitiya.cs7cs3.towerpower.activities.LiveMaps">
 
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/map"
@@ -25,6 +25,7 @@
         app:backgroundTint="#562D2D"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        mapbox:srcCompat="@drawable/ic_inventory_black_24dp" />
+        mapbox:srcCompat="@drawable/ic_inventory_black_24dp"
+        android:focusable="true" />
 
 </android.support.constraint.ConstraintLayout>

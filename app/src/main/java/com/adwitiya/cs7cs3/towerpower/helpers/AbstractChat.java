@@ -1,9 +1,9 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 /**
  * Common interface for chat messages, helps share code between RTDB and Firestore examples.
  */
-public abstract class AbstractChat {
+abstract class AbstractChat {
 
     public abstract String getName();
 

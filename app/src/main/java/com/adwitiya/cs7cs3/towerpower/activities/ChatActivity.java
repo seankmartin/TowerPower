@@ -1,6 +1,7 @@
-package com.adwitiya.cs7cs3.towerpower.Activity;
+package com.adwitiya.cs7cs3.towerpower.activities;
 
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,11 +29,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
-import com.adwitiya.cs7cs3.towerpower.Helpers.Chat;
-import com.adwitiya.cs7cs3.towerpower.Helpers.ChatHolder;
-import com.adwitiya.cs7cs3.towerpower.Helpers.ImeHelper;
-import com.adwitiya.cs7cs3.towerpower.Helpers.SignInResultNotifier;
+import com.adwitiya.cs7cs3.towerpower.helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.helpers.Chat;
+import com.adwitiya.cs7cs3.towerpower.helpers.ChatHolder;
+import com.adwitiya.cs7cs3.towerpower.helpers.ImeHelper;
 import com.adwitiya.cs7cs3.towerpower.R;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -83,31 +83,28 @@ public class ChatActivity extends AppCompatActivity
         String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         FirebaseFirestore mDatabase = FirebaseFirestore.getInstance();
         DocumentReference user_ref = mDatabase.collection("users").document(user_id);
-        user_ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document != null && document.exists()) {
-                        teamID = document.getData().get("team_id").toString();
-                        Log.d(TAG, "Team is " + teamID);
-                        if (teamID == null) {
-                            Log.d(TAG, "Returning default");
-                            sChatCollection = mDatabase.collection("chat");
-                        } else {
-                            Log.d(TAG, "Returning non default");
-                            sChatCollection = mDatabase.collection("teams").document(teamID).collection("chat");
-                        }
-
+        user_ref.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document != null && document.exists()) {
+                    teamID = document.getData().get("team_id").toString();
+                    Log.d(TAG, "Team is " + teamID);
+                    if (teamID == null) {
+                        Log.d(TAG, "Returning default");
+                        sChatCollection = mDatabase.collection("chat");
                     } else {
-                        Log.d(TAG, "User document does not exist in database in chat activity");
+                        Log.d(TAG, "Returning non default");
+                        sChatCollection = mDatabase.collection("teams").document(teamID).collection("chat");
                     }
+
                 } else {
-                    Log.d(TAG, "get failed with ", task.getException());
+                    Log.d(TAG, "User document does not exist in database in chat activity");
                 }
-                sChatQuery = sChatCollection.orderBy("timestamp").limit(50);
-                attachRecyclerViewAdapter();
+            } else {
+                Log.d(TAG, "get failed with ", task.getException());
             }
+            sChatQuery = sChatCollection.orderBy("timestamp").limit(50);
+            attachRecyclerViewAdapter();
         });
     }else{
             Toast.makeText(this,"Login before heading to chat.", Toast.LENGTH_SHORT).show();
@@ -144,12 +141,7 @@ public class ChatActivity extends AppCompatActivity
         checkFirebaseAuth(navigationView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ImeHelper.setImeOnDoneListener(mMessageEdit, new ImeHelper.DonePressedListener() {
-            @Override
-            public void onDonePressed() {
-                onSendClick();
-            }
-        });
+        ImeHelper.setImeOnDoneListener(mMessageEdit, () -> onSendClick());
     }
 
     @Override
@@ -175,10 +167,10 @@ public class ChatActivity extends AppCompatActivity
         Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
 
         //Theme song
-        if (soundPref == true) {
-            AudioPlay.playAudio(this,R.raw.theme);
+        if (soundPref) {
+            AudioPlay.playAudio(this);
         }
-        else if (soundPref == false){
+        else if (!soundPref){
             AudioPlay.stopAudio();
         }
     }
@@ -276,7 +268,7 @@ public class ChatActivity extends AppCompatActivity
         mMessageEdit.setText("");
     }
 
-    protected RecyclerView.Adapter newAdapter() {
+    private RecyclerView.Adapter newAdapter() {
         FirestoreRecyclerOptions<Chat> options =
                 new FirestoreRecyclerOptions.Builder<Chat>()
                         .setQuery(sChatQuery, Chat.class)
@@ -303,13 +295,8 @@ public class ChatActivity extends AppCompatActivity
         };
     }
 
-    protected void onAddMessage(Chat chat) {
-        sChatCollection.add(chat).addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e(TAG, "Failed to write message", e);
-            }
-        });
+    private void onAddMessage(Chat chat) {
+        sChatCollection.add(chat).addOnFailureListener(this, e -> Log.e(TAG, "Failed to write message", e));
     }
 
     @Override
@@ -351,25 +338,17 @@ public class ChatActivity extends AppCompatActivity
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enter Email ID");
             final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
-            builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String m_Text = input.getText().toString();
-                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                            "mailto",m_Text, null));
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
-                    startActivity(Intent.createChooser(emailIntent, "Send email..."));
-                }
+            builder.setPositiveButton("Send", (dialog, which) -> {
+                String m_Text = input.getText().toString();
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto",m_Text, null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
+                startActivity(Intent.createChooser(emailIntent, "Send email..."));
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
             builder.show();
         }
 

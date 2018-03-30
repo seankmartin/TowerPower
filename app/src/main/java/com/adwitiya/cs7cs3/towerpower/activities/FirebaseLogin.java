@@ -1,4 +1,4 @@
-package com.adwitiya.cs7cs3.towerpower.Activity;
+package com.adwitiya.cs7cs3.towerpower.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,7 +27,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.adwitiya.cs7cs3.towerpower.Helpers.AudioPlay;
+import com.adwitiya.cs7cs3.towerpower.helpers.AudioPlay;
 import com.adwitiya.cs7cs3.towerpower.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -70,9 +70,9 @@ public class FirebaseLogin extends AppCompatActivity
 
         ListView listView = findViewById(R.id.list_view);
 
-        MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
-        adapter.setNameIds(CLASS_NAME_IDS);
-        adapter.setDescriptionIds(DESCRIPTION_IDS);
+        MyArrayAdapter adapter = new MyArrayAdapter(this);
+        adapter.setNameIds();
+        adapter.setDescriptionIds();
 
 
         listView.setAdapter(adapter);
@@ -118,16 +118,16 @@ public class FirebaseLogin extends AppCompatActivity
 
     public static class MyArrayAdapter extends ArrayAdapter<Class> {
 
-        private Context mContext;
-        private Class[] mClasses;
+        private final Context mContext;
+        private final Class[] mClasses;
         private int[] mNameIds;
         private int[] mDescriptionIds;
 
-        public MyArrayAdapter(Context context, int resource, Class[] objects) {
-            super(context, resource, objects);
+        public MyArrayAdapter(Context context) {
+            super(context, android.R.layout.simple_list_item_2, FirebaseLogin.CLASSES);
 
             mContext = context;
-            mClasses = objects;
+            mClasses = FirebaseLogin.CLASSES;
         }
 
         @Override
@@ -145,11 +145,11 @@ public class FirebaseLogin extends AppCompatActivity
             return view;
         }
 
-        public void setDescriptionIds(int[] descriptionIds) {
-            mDescriptionIds = descriptionIds;
+        public void setDescriptionIds() {
+            mDescriptionIds = FirebaseLogin.DESCRIPTION_IDS;
         }
-        public void setNameIds(int[] namesIds) {
-            mNameIds = namesIds;
+        public void setNameIds() {
+            mNameIds = FirebaseLogin.CLASS_NAME_IDS;
         }
     }
 
@@ -198,10 +198,10 @@ public class FirebaseLogin extends AppCompatActivity
         Boolean soundPref = soundPrefs.getBoolean("SoundState",true);
 
         //Theme song
-        if (soundPref == true) {
-           AudioPlay.playAudio(this,R.raw.theme);
+        if (soundPref) {
+           AudioPlay.playAudio(this);
         }
-        else if (soundPref == false){
+        else if (!soundPref){
             AudioPlay.stopAudio();
         }
     }
@@ -253,7 +253,7 @@ public class FirebaseLogin extends AppCompatActivity
             startActivity(Chat);
         } else if (id == R.id.nav_tools) {
             // Navigate to Tools Activity
-            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.Activity.ToolsActivity.class);
+            Intent ToolsActivity = new Intent(getApplicationContext(), com.adwitiya.cs7cs3.towerpower.activities.ToolsActivity.class);
             startActivity(ToolsActivity);
         } else if (id == R.id.nav_share) {
             // Navigate to Share Activity
@@ -262,25 +262,17 @@ public class FirebaseLogin extends AppCompatActivity
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enter Email ID");
             final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
-            builder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String m_Text = input.getText().toString();
-                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                            "mailto",m_Text, null));
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
-                    startActivity(Intent.createChooser(emailIntent, "Send email..."));
-                }
+            builder.setPositiveButton("Send", (dialog, which) -> {
+                String m_Text = input.getText().toString();
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto",m_Text, null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Tower Power - Location based Android Game");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Friend,\n\nEnjoy this awesome game\nTower Power, a location based Android app. \nDownload Today\nhttps://scss.tcd.ie/~chakraad");
+                startActivity(Intent.createChooser(emailIntent, "Send email..."));
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
             builder.show();
         }
 

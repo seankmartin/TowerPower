@@ -20,7 +20,6 @@
         android:paddingRight="@dimen/activity_horizontal_margin">
 
         <TextView
-            android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-smallcaps"
@@ -32,12 +31,10 @@
             android:typeface="monospace" />
 
         <Space
-            android:id="@+id/space"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <TextView
-            android:id="@+id/subheader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-smallcaps"
@@ -50,10 +47,10 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/divider_1"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
-        app:srcCompat="?attr/dividerHorizontal" />
+        app:srcCompat="?attr/dividerHorizontal"
+        android:contentDescription="TODO" />
 
     <ImageView
         android:id="@+id/collect_logo"
@@ -62,7 +59,8 @@
         android:layout_gravity="center_horizontal|center"
         android:paddingTop="10dp"
         android:scaleType="fitCenter"
-        app:srcCompat="@drawable/collect_icon" />
+        app:srcCompat="@drawable/collect_icon"
+        android:contentDescription="TODO" />
 
     <TextView
         android:id="@+id/collect_text"
@@ -78,10 +76,10 @@
         android:typeface="sans" />
 
     <ImageView
-        android:id="@+id/divider_2"
         android:layout_width="wrap_content"
         android:layout_height="30dp"
-        app:srcCompat="?attr/dividerHorizontal" />
+        app:srcCompat="?attr/dividerHorizontal"
+        android:contentDescription="TODO" />
 
     <ImageView
         android:id="@+id/destroy_logo"
@@ -90,7 +88,8 @@
         android:layout_gravity="center_horizontal|center"
         android:paddingTop="10dp"
         android:scaleType="fitCenter"
-        app:srcCompat="@drawable/destroy" />
+        app:srcCompat="@drawable/destroy"
+        android:contentDescription="TODO" />
 
     <TextView
         android:id="@+id/destroy_text"
@@ -106,10 +105,10 @@
         android:typeface="sans" />
 
     <ImageView
-        android:id="@+id/divider_3"
         android:layout_width="wrap_content"
         android:layout_height="30dp"
-        app:srcCompat="?attr/dividerHorizontal" />
+        app:srcCompat="?attr/dividerHorizontal"
+        android:contentDescription="TODO" />
 
     <ImageView
         android:id="@+id/defend_logo"
@@ -118,7 +117,8 @@
         android:layout_gravity="center_horizontal|center"
         android:paddingTop="10dp"
         android:scaleType="fitCenter"
-        app:srcCompat="@drawable/defend" />
+        app:srcCompat="@drawable/defend"
+        android:contentDescription="TODO" />
 
     <TextView
         android:id="@+id/defend_text"
@@ -134,11 +134,11 @@
         android:typeface="sans" />
 
     <ImageView
-        android:id="@+id/divider_4"
         android:layout_width="wrap_content"
         android:layout_height="35dp"
         android:paddingBottom="50dp"
-        app:srcCompat="?attr/dividerHorizontal" />
+        app:srcCompat="?attr/dividerHorizontal"
+        android:contentDescription="TODO" />
 
     <TextView
         android:id="@+id/group_text"
@@ -155,7 +155,6 @@
         android:typeface="sans" />
 
     <TextView
-        android:id="@+id/group_text2"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
         android:layout_gravity="center_horizontal|center"

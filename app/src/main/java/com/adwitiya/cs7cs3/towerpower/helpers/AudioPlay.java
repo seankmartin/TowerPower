@@ -1,21 +1,18 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
-/**
- * Created by stackoverflow on 16/03/2018.
- */
 
 import android.content.Context;
 import android.media.MediaPlayer;
 
 public class AudioPlay {
 
-    public static MediaPlayer mediaPlayer;
-    public static boolean isplayingAudio=false;
+    private static MediaPlayer mediaPlayer;
+    private static boolean isplayingAudio=false;
 
 
 
-    public static void playAudio(Context c,int id){
-        mediaPlayer = MediaPlayer.create(c,id);
+    public static void playAudio(Context c){
+        mediaPlayer = MediaPlayer.create(c, com.adwitiya.cs7cs3.towerpower.R.raw.theme);
         if(!mediaPlayer.isPlaying())
         {
             isplayingAudio=true;

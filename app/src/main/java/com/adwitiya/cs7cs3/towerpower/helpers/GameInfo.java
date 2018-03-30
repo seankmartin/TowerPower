@@ -1,25 +1,16 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 import java.util.Date;
 
-/**
- * Created by Stefano on 23/03/2018.
- */
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Stefano on 23/03/2018.
- */
-
 public class GameInfo {
     private Map<String, Object> initialPosition;
-    private Map<String, Object>  hints;
-    private Map<String, Object>  materials;
-    private Map<String, Object> bases;
-    private Map<String, Object>  towers;
+    private final Map<String, Object>  hints;
+    private final Map<String, Object>  materials;
+    private final Map<String, Object> bases;
+    private final Map<String, Object>  towers;
     private long materialsInventory;
     private long hintsInventory;
     private long timeBonus;
@@ -116,7 +107,7 @@ public class GameInfo {
             }
         }
 
-        return finalKey;
+        return null;
     }
 
     public Map<String, Object> getBases() {
@@ -155,11 +146,11 @@ public class GameInfo {
         this.hintsInventory = hintsInventory;
     }
 
-    public void addHintToInvetory(){
+    private void addHintToInvetory(){
         hintsInventory = hintsInventory+1;
     }
 
-    public void useHints (){
+    private void useHints(){
         hintsInventory = hintsInventory - 4;
     }
 
@@ -167,7 +158,7 @@ public class GameInfo {
         return hintsInventory;
     }
 
-    public void addMaterialToInvetory(){
+    private void addMaterialToInvetory(){
         materialsInventory = materialsInventory+1 ;
     }
 
@@ -179,7 +170,7 @@ public class GameInfo {
         this.materialsInventory = materialsInventory;
     }
 
-    public void useMaterials(){
+    private void useMaterials(){
         materialsInventory = materialsInventory - 5;
     }
 
@@ -195,8 +186,8 @@ public class GameInfo {
         return won;
     }
 
-    public void setWon(boolean won) {
-        this.won = won;
+    public void setWon() {
+        this.won = true;
     }
 
     public boolean isLost() {

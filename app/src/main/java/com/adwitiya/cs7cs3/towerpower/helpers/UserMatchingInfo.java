@@ -1,27 +1,23 @@
-package com.adwitiya.cs7cs3.towerpower.Helpers;
-
-/**
- * Created by Stefano on 20/03/2018.
- */
+package com.adwitiya.cs7cs3.towerpower.helpers;
 
 public class UserMatchingInfo {
-    PositionHelper location;
-    boolean shouldSearchAgain;
-    String userID;
-    String email;
-    String name;
-    String role;
-    int afkTimeOut;
-    String photoUrl;
+    private PositionHelper location;
+    private boolean shouldSearchAgain;
+    private String userID;
+    private String email;
+    private String name;
+    private String role;
+    private int afkTimeOut;
+    private String photoUrl;
 
-    public UserMatchingInfo(PositionHelper location, boolean shouldSearchAgain, String userID, String email, String name, String role, int afkTimeOut,String photoUrl) {
+    public UserMatchingInfo(PositionHelper location, String userID, String email, String name, String photoUrl) {
         this.location = location;
-        this.shouldSearchAgain = shouldSearchAgain;
+        this.shouldSearchAgain = false;
         this.userID = userID;
         this.email = email;
         this.name = name;
-        this.role = role;
-        this.afkTimeOut = afkTimeOut;
+        this.role = "random";
+        this.afkTimeOut = 0;
         this.photoUrl = photoUrl;
     }
 
