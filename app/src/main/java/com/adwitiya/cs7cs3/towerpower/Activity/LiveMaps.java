@@ -14,6 +14,7 @@ import android.location.Location;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -65,7 +66,6 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
@@ -87,8 +87,6 @@ import com.mapbox.services.android.telemetry.location.LostLocationEngine;
 import com.mapbox.services.android.telemetry.permissions.PermissionsListener;
 import com.mapbox.services.android.telemetry.permissions.PermissionsManager;
 import com.squareup.picasso.Picasso;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -119,12 +117,13 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     private String teamID;
     private String gameID;
     private int hint=0, material=0;
+    long gameduration = 600000;
+    CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_maps);
-        setTitle("Hello StackOverflow");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(Color.BLACK);
         setSupportActionBar(toolbar);
@@ -173,13 +172,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 new MaterialDialog.Builder(this)
                         .title(R.string.inv_menu)
                         .customView(R.layout.dialog_customview, true)
-                        .positiveText(R.string.guess_pwd)
-                        .negativeText(R.string.go_back)
-                        .onPositive(
-                                (dialog1, which) ->
-                                        Toast.makeText(LiveMaps.this, "WRONG!",
-                                                Toast.LENGTH_SHORT).show())
-                        .onNegative((dialog1, which) -> dialog1.hide())
                         .build();
 
         dialog.show();
@@ -279,7 +271,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (lastLocation != null) {
             originLocation = lastLocation;
             setCameraPosition(lastLocation);
-            drawCircle(map, new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude()), Color.BLACK, 500);
         } else {
             locationEngine.addLocationEngineListener(this);
         }
@@ -319,7 +310,6 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (location != null) {
             originLocation = location;
             setCameraPosition(location);
-            drawCircle(map, new LatLng(location.getLatitude(),location.getLongitude()), Color.BLACK, 500);
             locationEngine.removeLocationEngineListener(this);
         }
     }
@@ -565,14 +555,17 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                                 gameID = doc.getId();
                                 gameInfo = new GameInfo();
                                 decodeGameDBStructure(doc);
+                                if (timer != null) {
+                                    timer.cancel();
+                                }
+                                createGameTimer();
                             }
                             break; // N.B. THIS IS TO RETRIEVE ONLY ONE
                         }
                         mapView.getMapAsync(new OnMapReadyCallback() {
                             @Override
                             public void onMapReady(MapboxMap mapboxMap) {
-                                map = addMarkersToMap(mapboxMap);
-
+                                map = renderMap(mapboxMap);
                                 // handle onClick of Markers
                                 map.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                                     @Override
@@ -670,25 +663,28 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         long timeBonus = 0;
         if (tmp != null) {
             timeBonus = (long) tmp;
-            DocumentReference ref =  mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
-            if ( timeBonus == -1 && !gameInfo.isWon()){
+            DocumentReference ref = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
+            if (timeBonus == -1 && !gameInfo.isWon()) {
                 gameInfo.setTimeBonus(-2);
                 gameInfo.setWon(true);
                 WriteBatch batch = mDatabase.batch();
                 batch.update(ref, "time_bonus", gameInfo.getTimeBonus());
                 batch.commit();
-                Toast.makeText(LiveMaps.this, "You won the game!",
-                        Toast.LENGTH_SHORT).show();
-            }
-            else if ( timeBonus == -2 && !gameInfo.isWon()){
+                if ( isGameWon() ) {
+                    setTitle("You Win !");
+                } else {
+                    setTitle("You Lost !");
+                }
+            } else if (timeBonus == -2 && !gameInfo.isWon()) {
                 gameInfo.setTimeBonus(-3);
-                gameInfo.setWon(true);
-                Toast.makeText(LiveMaps.this, "You won the game!",
-                        Toast.LENGTH_SHORT).show();
+                gameInfo.setWon(true);if ( isGameWon() ) {
+                    setTitle("You Win !");
+                } else {
+                    setTitle("You Lost !");
+                }
                 ref.delete();
                 mDatabase.collection("teams").document(teamID).delete();
-            }
-            else{
+            } else {
                 gameInfo.setTimeBonus(timeBonus);
             }
         }
@@ -748,11 +744,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                     if ( isGameWon() ){
                         gameInfo.setTimeBonus(-1);
                         gameInfo.setWon(true);
-                        Toast.makeText(LiveMaps.this, "You won the game!",
-                                Toast.LENGTH_SHORT).show();
+                        setTitle("You Win !");
                         ref.update("time_bonus", gameInfo.getTimeBonus());
-                        //ref.delete();
-                        //mDatabase.collection("teams").document(teamID).delete();
                     }
 
                 }
@@ -780,7 +773,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         return bitmap;
     }
 
-    public MapboxMap addMarkersToMap(MapboxMap map) {
+    public MapboxMap renderMap(MapboxMap map) {
         ///DO NOT INVOKE IF GAME DOES NOT EXIST
         Bitmap bitmap = getBitmapFromVectorDrawable(this,R.drawable.ic_base);
         Icon icon = IconFactory.getInstance(LiveMaps.this).fromBitmap(bitmap);
@@ -828,6 +821,8 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                         .icon(icon));
             }
         }
+        if (gameInfo != null)
+            drawCircle(map, gameInfo.getStartLocation(), Color.BLACK, 500);
         return map;
     }
 
@@ -848,7 +843,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
 
                             decodeGameDBStructure(snapshot);
                             map.clear();
-                            map = addMarkersToMap(map);
+                            map = renderMap(map);
                             Log.d(TAG, gameInfo.toString());
                         } else {
                             Log.d(TAG, "Current data: null");
@@ -863,7 +858,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
 
-    public static void drawCircle(MapboxMap map, LatLng position, int color, double radiusMeters) {
+    public static void drawCircle(MapboxMap map, PositionHelper position, int color, double radiusMeters) {
         PolylineOptions polylineOptions = new PolylineOptions();
         polylineOptions.color(Color.BLACK);
         polylineOptions.width(3.0f); // change the line width here
@@ -871,7 +866,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         map.addPolyline(polylineOptions);
     }
 
-    private static ArrayList<LatLng> getCirclePoints(LatLng position, double radius) {
+    private static ArrayList<LatLng> getCirclePoints(PositionHelper position, double radius) {
         int degreesBetweenPoints = 10; // change here for shape
         int numberOfPoints = (int) Math.floor(360 / degreesBetweenPoints);
         double distRadians = radius / 6371000.0; // earth radius in meters
@@ -895,7 +890,40 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         polygons.add(polygons.get(0));
         return polygons;
     }
+    public void createGameTimer(){
+        // Game Timer Logic
+        Date current = new Date();
+        long millisecond = (current.getTime() - gameInfo.getStartTime().getTime());
+        millisecond =  gameduration - millisecond;
+        timer = new CountDownTimer(millisecond, 1000) {
 
+            public void onTick(long millisUntilFinished) {
+                if ( !isGameWon() ){
+                    millisUntilFinished = millisUntilFinished / 1000;
+                    long minsUntilFinished = millisUntilFinished / 60;
+                    long secsUntilFinished = millisUntilFinished % 60;
+                    if ( secsUntilFinished < 10){
+                       setTitle("Live Maps \t\t" +minsUntilFinished +":0" + secsUntilFinished );
+                    }
+                    else{
+                       setTitle("Live Maps \t\t" +minsUntilFinished +":" + secsUntilFinished );
+                    }
+                }
+            }
+            public void onFinish() {
+                if ( !gameInfo.isWon() ) {
+                    gameInfo.setTimeBonus(-1);
+                    gameInfo.setWon(true);
+                    DocumentReference ref = mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
+                    ref.update("time_bonus", gameInfo.getTimeBonus());
+                }
+                if ( !isGameWon() ) {
+                    gameInfo.setWon(true);
+                    setTitle("You Lost !");
+                }
+            }
+        }.start();
+    }
 }
 
 

@@ -24,6 +24,7 @@ public class GameInfo {
     private long hintsInventory;
     private long timeBonus;
     private boolean won;
+    private boolean lost;
     private PositionHelper startLocation;
     private Date startTime;
 
@@ -37,6 +38,7 @@ public class GameInfo {
         this.hintsInventory = 0;
         this.startTime = new Date();
         this.won = false;
+        this.lost = false;
     }
 
     public Map<String, Object> getInitialPosition() {
@@ -195,5 +197,13 @@ public class GameInfo {
 
     public void setWon(boolean won) {
         this.won = won;
+    }
+
+    public boolean isLost() {
+        return lost;
+    }
+
+    public void setLost(boolean lost) {
+        this.lost = lost;
     }
 }

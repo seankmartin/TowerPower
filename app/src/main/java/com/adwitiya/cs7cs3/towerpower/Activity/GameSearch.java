@@ -256,9 +256,6 @@ public class GameSearch extends AppCompatActivity
                             editor_team.putString("TeamID",teamID);
                             editor_team.commit();
                             getTeam();
-
-                            Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
-                            acceptBtn.setEnabled(true);
                         } else {
                             Log.d(TAG, "Current data: null");
                         }
@@ -369,6 +366,9 @@ public class GameSearch extends AppCompatActivity
                                     if (user.getPhotoUrl() != "") {
                                         Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
                                     }
+                                    //Enable the confirm button when all the players are found
+                                    Button acceptBtn = (Button)findViewById(R.id.acceptBtn);
+                                    acceptBtn.setEnabled(true);
                                 }
                                 //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                             }
