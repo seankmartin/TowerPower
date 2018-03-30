@@ -74,7 +74,12 @@ public class ChatActivity extends AppCompatActivity
         FirebaseFirestore.setLoggingEnabled(true);
     }
 
-    private void getChatReference() {
+    private void getChatReference(NavigationView view ) {
+        View header = view.getHeaderView(0);
+        TextView UserName = (TextView) header.findViewById(R.id.user_name);
+        TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
+        if(!UserName.getText().equals("Default User"))
+        {
         String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         FirebaseFirestore mDatabase = FirebaseFirestore.getInstance();
         DocumentReference user_ref = mDatabase.collection("users").document(user_id);
@@ -86,11 +91,10 @@ public class ChatActivity extends AppCompatActivity
                     if (document != null && document.exists()) {
                         teamID = document.getData().get("team_id").toString();
                         Log.d(TAG, "Team is " + teamID);
-                        if(teamID == null) {
+                        if (teamID == null) {
                             Log.d(TAG, "Returning default");
                             sChatCollection = mDatabase.collection("chat");
-                        }
-                        else {
+                        } else {
                             Log.d(TAG, "Returning non default");
                             sChatCollection = mDatabase.collection("teams").document(teamID).collection("chat");
                         }
@@ -105,7 +109,12 @@ public class ChatActivity extends AppCompatActivity
                 attachRecyclerViewAdapter();
             }
         });
+    }else{
+            Toast.makeText(this,"Login before heading to chat.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
+
 
     @BindView(R.id.messagesList)
     public RecyclerView mRecyclerView;
@@ -150,7 +159,7 @@ public class ChatActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         checkFirebaseAuth(navigationView);
         switchSound();
-        getChatReference();
+        getChatReference(navigationView);
         attachRecyclerViewAdapter();
     }
 
