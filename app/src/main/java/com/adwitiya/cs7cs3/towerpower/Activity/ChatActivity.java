@@ -78,7 +78,7 @@ public class ChatActivity extends AppCompatActivity
         View header = view.getHeaderView(0);
         TextView UserName = (TextView) header.findViewById(R.id.user_name);
         TextView UserEmail = (TextView) header.findViewById(R.id.user_email);
-        if(!UserName.getText().equals("Default User"))
+        if(!UserName.getText().equals(getText(R.string.def_user)))
         {
         String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         FirebaseFirestore mDatabase = FirebaseFirestore.getInstance();
