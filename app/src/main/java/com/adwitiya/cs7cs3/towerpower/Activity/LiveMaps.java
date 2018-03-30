@@ -175,14 +175,16 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                         .build();
 
         dialog.show();
-        View CustomView= dialog.getCustomView();
-        materials = ""+gameInfo.getMaterialsInventory();
-        TextView collectedMaterials = (TextView)CustomView.findViewById(R.id.collectedMaterials);
-        collectedMaterials.setText(materials);
+        if (gameInfo != null) {
+            View CustomView = dialog.getCustomView();
+            materials = "" + gameInfo.getMaterialsInventory();
+            TextView collectedMaterials = (TextView) CustomView.findViewById(R.id.collectedMaterials);
+            collectedMaterials.setText(materials);
 
-        hints = ""+gameInfo.getHintsInventory();
-        TextView collectedHints = (TextView)CustomView.findViewById(R.id.collectedHints);
-        collectedHints.setText(hints);
+            hints = "" + gameInfo.getHintsInventory();
+            TextView collectedHints = (TextView) CustomView.findViewById(R.id.collectedHints);
+            collectedHints.setText(hints);
+        }
     }
 
     private void requestEnableGPS(){
@@ -544,8 +546,9 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     public void initialRenderMarkers(){
-        if ( teamID != null ) {
+        if ( teamID != null) {
             CollectionReference colRef = mDatabase.collection("teams").document(teamID).collection("games");
+            if (colRef != null) {
             colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -580,6 +583,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                     }
                 }
             });
+        }
         }
         else{
             Toast.makeText(LiveMaps.this, "You are not in a game",
