@@ -1,8 +1,6 @@
 package com.adwitiya.cs7cs3.towerpower.activities;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -11,7 +9,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
@@ -39,20 +36,15 @@ import com.adwitiya.cs7cs3.towerpower.helpers.PositionHelper;
 import com.adwitiya.cs7cs3.towerpower.R;
 import com.adwitiya.cs7cs3.towerpower.helpers.UserInfo;
 import com.adwitiya.cs7cs3.towerpower.helpers.UserMatchingInfo;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerMode;
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
@@ -82,8 +74,6 @@ public class GameSearch extends AppCompatActivity
     private Uri photoUrl;
     private String teamID;
     private ArrayList<UserInfo> team;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -278,91 +268,23 @@ public class GameSearch extends AppCompatActivity
                     int i;
                     for (i=0; i<3; i++) {
                         Object tmp = map.get("user"+i);
-                        Map<String, Object> userMap;
                         if (tmp != null){
-                            userMap = (Map<String, Object>) tmp;
-                            long afkTimeOut=-1;
-                            tmp = userMap.get("afkTimeOut");
-                            if (tmp != null) afkTimeOut = (long) tmp;
-                            String email="";
-                            tmp = userMap.get("email");
-                            if (tmp != null) email = (String) tmp;
-                            Map<String, Object> locationMap=null;
-                            tmp = userMap.get("location");
-                            if (tmp != null) locationMap = (Map<String, Object>) tmp;
-                            tmp = locationMap.get("latitude");
-                            double lat = 0;
-                            if (tmp != null) lat = (double) tmp;
-                            tmp = locationMap.get("longitude");
-                            double lng = 0;
-                            if (tmp != null) lng = (double) tmp;
-
-                            String name="";
-                            tmp = userMap.get("name");
-                            if (tmp != null) name = (String) tmp;
-                            String response="";
-                            tmp = userMap.get("response");
-                            if (tmp != null) response = (String) tmp;
-                            String role="";
-                            tmp = userMap.get("role");
-                            if (tmp != null) role = (String) tmp;
-                            boolean shouldSearchAgain=false;
-                            tmp = userMap.get("shouldSearchAgain");
-                            if (tmp != null) shouldSearchAgain = (boolean) tmp;
-                            String userID="";
-                            tmp = userMap.get("userID");
-                            if (tmp != null) userID = (String) tmp;
-
-                            String photoUrl="";
-                            tmp = userMap.get("photoUrl");
-                            if (tmp != null) photoUrl = (String) tmp;
-
-                            UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID,photoUrl );
-                            team.add(user);
-
-
+                            UserInfo user = getUserInfo(tmp);
 
                             if (i==0){
-                                TextView player_name = findViewById(R.id.playername1);
-                                TextView player_role = findViewById(R.id.playerrole1);
-                                ImageView profile_pic = findViewById(R.id.playerimg1);
-
-                                player_name.setText(user.getName());
-                                player_role.setText(user.getRole());
-
-                                if (user.getPhotoUrl() != "") {
-                                    Log.d(TAG, "ahahahahhaha"+user.getPhotoUrl());
-                                    Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
-                                }
+                                displayPlayer(user, R.id.playername1, R.id.playerrole1, R.id.playerimg1, user.getName(), user.getRole());
                             }
 
                             if (i==1){
-                                TextView player_name = findViewById(R.id.playername2);
-                                TextView player_role = findViewById(R.id.playerrole2);
-                                ImageView profile_pic = findViewById(R.id.playerimg2);
-
-                                player_name.setText(user.getName());
-                                player_role.setText(user.getRole());
-                                if (user.getPhotoUrl() != "") {
-                                    Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
-                                }
+                                displayPlayer(user, R.id.playername2, R.id.playerrole2, R.id.playerimg2, user.getName(), user.getRole());
                             }
 
                             if (i==2){
-                                TextView player_name = findViewById(R.id.playername3);
-                                TextView player_role = findViewById(R.id.playerrole3);
-                                ImageView profile_pic = findViewById(R.id.playerimg3);
-
-                                player_name.setText(user.getName());
-                                player_role.setText(user.getRole());
-                                if (user.getPhotoUrl() != "") {
-                                    Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
-                                }
+                                displayPlayer(user, R.id.playername3, R.id.playerrole3, R.id.playerimg3, user.getName(), user.getRole());
                                 //Enable the confirm button when all the players are found
                                 Button acceptBtn = findViewById(R.id.acceptBtn);
                                 acceptBtn.setEnabled(true);
                             }
-                            //Log.d(TAG, user.getEmail()+" "+user.getName()+" "+user.getResponse()+" "+user.getRole()+" "+user.getUserID()+" "+user.getAfkTimeOut()+" "+user.isShouldSearchAgain()+" "+user.getLocation());
                         }
                     }
                 } else {
@@ -374,7 +296,63 @@ public class GameSearch extends AppCompatActivity
         });
     }
 
+    private void displayPlayer(UserInfo user, int playername, int playerrole, int playerimg, String name, String role) {
+        TextView player_name = findViewById(playername);
+        TextView player_role = findViewById(playerrole);
+        ImageView profile_pic = findViewById(playerimg);
 
+        player_name.setText(name);
+        player_role.setText(role);
+
+        if (user.getPhotoUrl() != "") {
+            Picasso.with(GameSearch.this).load(user.getPhotoUrl()).into(profile_pic);
+        }
+    }
+
+    @NonNull
+    private UserInfo getUserInfo(Object tmp) {
+        Map<String, Object> userMap;
+        userMap = (Map<String, Object>) tmp;
+        long afkTimeOut=-1;
+        tmp = userMap.get("afkTimeOut");
+        if (tmp != null) afkTimeOut = (long) tmp;
+        String email="";
+        tmp = userMap.get("email");
+        if (tmp != null) email = (String) tmp;
+        Map<String, Object> locationMap=null;
+        tmp = userMap.get("location");
+        if (tmp != null) locationMap = (Map<String, Object>) tmp;
+        tmp = locationMap.get("latitude");
+        double lat = 0;
+        if (tmp != null) lat = (double) tmp;
+        tmp = locationMap.get("longitude");
+        double lng = 0;
+        if (tmp != null) lng = (double) tmp;
+
+        String name="";
+        tmp = userMap.get("name");
+        if (tmp != null) name = (String) tmp;
+        String response="";
+        tmp = userMap.get("response");
+        if (tmp != null) response = (String) tmp;
+        String role="";
+        tmp = userMap.get("role");
+        if (tmp != null) role = (String) tmp;
+        boolean shouldSearchAgain=false;
+        tmp = userMap.get("shouldSearchAgain");
+        if (tmp != null) shouldSearchAgain = (boolean) tmp;
+        String userID="";
+        tmp = userMap.get("userID");
+        if (tmp != null) userID = (String) tmp;
+
+        String photoUrl="";
+        tmp = userMap.get("photoUrl");
+        if (tmp != null) photoUrl = (String) tmp;
+
+        UserInfo user = new UserInfo(afkTimeOut, email, new PositionHelper(lat,lng), name, response, role, shouldSearchAgain, userID,photoUrl );
+        team.add(user);
+        return user;
+    }
 
 
     @Override
@@ -415,38 +393,6 @@ public class GameSearch extends AppCompatActivity
             enableLocationPlugin();
         } else {
             finish();
-        }
-    }
-
-    public static class MyArrayAdapter extends ArrayAdapter<Class> {
-
-        private final Context mContext;
-        private final Class[] mClasses;
-        private int[] mDescriptionIds;
-
-        public MyArrayAdapter(Context context, int resource, Class[] objects) {
-            super(context, resource, objects);
-            mContext = context;
-            mClasses = objects;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = convertView;
-
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
-                view = inflater.inflate(android.R.layout.simple_list_item_2, null);
-            }
-
-            ((TextView) view.findViewById(android.R.id.text1)).setText(mClasses[position].getSimpleName());
-            ((TextView) view.findViewById(android.R.id.text2)).setText(mDescriptionIds[position]);
-
-            return view;
-        }
-
-        public void setDescriptionIds(int[] descriptionIds) {
-            mDescriptionIds = descriptionIds;
         }
     }
 
@@ -620,8 +566,7 @@ public class GameSearch extends AppCompatActivity
         mapView.onStart();
 
     }
-
-
+    
     @Override
     public void onStop() {
         super.onStop();
