@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GameInfo {
+    public static final String MORE_HINTS_NEEDED_KEY = "more_towers";
+    public static final String MORE_MATERIALS_NEEDED_KEY = "more_mats";
     private Map<String, Object> initialPosition;
     private final Map<String, Object>  hints;
     private final Map<String, Object>  materials;
@@ -57,7 +59,6 @@ public class GameInfo {
     }
 
     public String collect(double lat, double lon){
-        int i=0;
         String finalKey=null;
         PositionHelper pos;
         for ( String key : this.getHints().keySet() ){
@@ -87,7 +88,7 @@ public class GameInfo {
                     //this.getBases().remove(finalKey);
                 }
                 else {
-                    finalKey = null;
+                    finalKey = MORE_MATERIALS_NEEDED_KEY;
                 }
                 return finalKey;
             }
@@ -101,7 +102,7 @@ public class GameInfo {
                     this.getTowers().remove(finalKey);
                 }
                 else {
-                    finalKey = null;
+                    finalKey = MORE_HINTS_NEEDED_KEY;
                 }
                 return finalKey;
             }

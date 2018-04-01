@@ -1,9 +1,7 @@
 package com.adwitiya.cs7cs3.towerpower.activities;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -17,7 +15,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -45,7 +42,6 @@ import com.adwitiya.cs7cs3.towerpower.R;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -53,19 +49,14 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
@@ -77,7 +68,6 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerMode;
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
 import com.mapbox.services.android.telemetry.location.LocationEngine;
@@ -581,7 +571,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
                 if (tmp != null) lat = (double) tmp;
                 tmp = locationMap.get("longitude");
                 if (tmp != null) lon = (double) tmp;
-                if (tmp != null) gameInfo.addHint(key,  lat, lon);
+                if (tmp != null) gameInfo.addHint(key, lat, lon);
             }
         }
         Map<String, Object> towersMap = (Map<String, Object>) gameInfoMap.get("towers");
@@ -664,55 +654,74 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
             LatLng pos = marker.getPosition();
             //String deletedKey = gameLocations.deletePosition(pos.getLatitude(), pos.getLongitude());
             String deletedKey = gameInfo.collect(pos.getLatitude(), pos.getLongitude());
-            if (deletedKey == null){
-                Toast.makeText(LiveMaps.this, "Action not allowed", Toast.LENGTH_SHORT).show();
+            if (deletedKey.equals(GameInfo.MORE_HINTS_NEEDED_KEY)){
+                Toast.makeText(LiveMaps.this, "Collect four hints to destroy towers", Toast.LENGTH_SHORT).show();
+            }
+            else if (deletedKey.equals(GameInfo.MORE_MATERIALS_NEEDED_KEY)) {
+                Toast.makeText(LiveMaps.this, "Collect five materials to fortify bases", Toast.LENGTH_SHORT).show();
             }
             else{
                 DocumentReference ref =  mDatabase.collection("teams").document(teamID).collection("games").document(gameID);
                 if ( deletedKey.contains("hint") ) {
-                    WriteBatch batch = mDatabase.batch();
-                    batch.update(ref, "hints." + deletedKey, FieldValue.delete());
-                    batch.update(ref, "inventory.hints",gameInfo.getHintsInventory());
-                    batch.commit();
-                    Toast.makeText(LiveMaps.this, "Hint collected",
-                            Toast.LENGTH_SHORT).show();
+                    collectHint(deletedKey, ref);
                 }
                 else if ( deletedKey.contains("material") ) {
-                    WriteBatch batch = mDatabase.batch();
-                    batch.update(ref,"materials." + deletedKey, FieldValue.delete());
-                    batch.update(ref,"inventory.materials",gameInfo.getMaterialsInventory());
-                    batch.commit();
-                    Toast.makeText(LiveMaps.this, "Material collected",
-                            Toast.LENGTH_SHORT).show();
+                    collectMaterial(deletedKey, ref);
                 }
                 else if ( deletedKey.contains("base") ) {
-                    //update inventory layout and update bonus on DB
-                    WriteBatch batch = mDatabase.batch();
-                    batch.update(ref,"inventory.materials", gameInfo.getMaterialsInventory());
-                    gameInfo.setTimeBonus( gameInfo.getTimeBonus()+1 );
-                    batch.update(ref,"time_bonus", gameInfo.getTimeBonus());
-                    batch.commit();
-                    Toast.makeText(LiveMaps.this, "Base fortified!",
-                            Toast.LENGTH_SHORT).show();
+                    fortifyBase(ref);
+
                 }
                 else if ( deletedKey.contains("tower") ) {
-                    WriteBatch batch = mDatabase.batch();
-                    batch.update(ref, "inventory.hints", gameInfo.getHintsInventory());
-                    batch.update(ref, "towers." + deletedKey, FieldValue.delete());
-                    batch.commit();
-                    Toast.makeText(LiveMaps.this, "Tower destroyed!",
-                            Toast.LENGTH_SHORT).show();
-                    if ( isGameWon() ){
-                        gameInfo.setTimeBonus(-1);
-                        gameInfo.setWon();
-                        setTitle("You Win !");
-                        ref.update("time_bonus", gameInfo.getTimeBonus());
-                    }
-
+                    destroyTower(deletedKey, ref);
                 }
             }
         }
         return false;
+    }
+
+    private void destroyTower(String key, DocumentReference gameRef) {
+        WriteBatch batch = mDatabase.batch();
+        batch.update(gameRef, "inventory.hints", gameInfo.getHintsInventory());
+        batch.update(gameRef, "towers." + key, FieldValue.delete());
+        batch.commit();
+        Toast.makeText(LiveMaps.this, "Tower destroyed!",
+                Toast.LENGTH_SHORT).show();
+        if ( isGameWon() ){
+            gameInfo.setTimeBonus(-1);
+            gameInfo.setWon();
+            setTitle("You Win !");
+            gameRef.update("time_bonus", gameInfo.getTimeBonus());
+        }
+    }
+
+    private void fortifyBase(DocumentReference gameRef) {
+        //update inventory layout and update bonus on DB
+        WriteBatch batch = mDatabase.batch();
+        batch.update(gameRef,"inventory.materials", gameInfo.getMaterialsInventory());
+        gameInfo.setTimeBonus( gameInfo.getTimeBonus()+1 );
+        batch.update(gameRef,"time_bonus", gameInfo.getTimeBonus());
+        batch.commit();
+        Toast.makeText(LiveMaps.this, "Base fortified!",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void collectMaterial(String key, DocumentReference gameRef) {
+        WriteBatch batch = mDatabase.batch();
+        batch.update(gameRef,"materials." + key, FieldValue.delete());
+        batch.update(gameRef,"inventory.materials",gameInfo.getMaterialsInventory());
+        batch.commit();
+        Toast.makeText(LiveMaps.this, "Material collected",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void collectHint(String key, DocumentReference gameRef) {
+        WriteBatch batch = mDatabase.batch();
+        batch.update(gameRef, "hints." + key, FieldValue.delete());
+        batch.update(gameRef, "inventory.hints",gameInfo.getHintsInventory());
+        batch.commit();
+        Toast.makeText(LiveMaps.this, "Hint collected",
+                Toast.LENGTH_SHORT).show();
     }
 
     private boolean isGameWon(){
