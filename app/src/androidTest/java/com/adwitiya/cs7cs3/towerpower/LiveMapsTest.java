@@ -1,5 +1,13 @@
 package com.adwitiya.cs7cs3.towerpower;
 
+/*
+This test was developed to test pulling geo locations from the Firebase database
+Since then we have changed our structure, and we don't write locations to the same database location
+However, this test verified for us that we were correctly pulling geo locations from the database
+We now use the same logic to pull geo locations from:
+team collection -> team_ID document -> games collection -> game_ID document
+ */
+
 import android.content.Context;
 import android.location.Location;
 import android.support.annotation.NonNull;
@@ -7,7 +15,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
-import com.adwitiya.cs7cs3.towerpower.Helpers.PositionHelper;
+import com.adwitiya.cs7cs3.towerpower.helpers.PositionHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -34,9 +42,6 @@ import static android.content.ContentValues.TAG;
 import static android.util.Log.println;
 import static org.junit.Assert.*;
 
-/**
- * Created by Anant Gupta on 3/20/2018.
- */
 @RunWith(AndroidJUnit4.class)
 public class LiveMapsTest {
     private List<PositionHelper> positionList;
@@ -62,7 +67,7 @@ public class LiveMapsTest {
 
     @Test
     public void retrieveMultiLocFromDB() throws Exception{
-
+        mDatabase = FirebaseFirestore.getInstance();
         CollectionReference colRef = mDatabase.collection("locations");
         colRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -100,17 +105,22 @@ public class LiveMapsTest {
 
         });
         int pos_size = 60;
-        assertEquals(pos_size, positionList.size());
+        if(positionList == null) {
+            fail("No locations in database");
+        }
+        else {
+            assertEquals(pos_size, positionList.size());
 
-        for (int i= 0; i<positionList.size(); i++) {
-            PositionHelper temp = positionList.get(i);
-            //println(temp);
-            double temp_lat = temp.getLatitude();
-            String tempstr = String.valueOf(temp_lat);
-            double temp_long = temp.getLongitude() ;
-            String tempstrlong = String.valueOf((temp_long));
-            assertNotNull(tempstr);
-            assertNotNull(tempstrlong);
+            for (int i = 0; i < positionList.size(); i++) {
+                PositionHelper temp = positionList.get(i);
+                //println(temp);
+                double temp_lat = temp.getLatitude();
+                String tempstr = String.valueOf(temp_lat);
+                double temp_long = temp.getLongitude();
+                String tempstrlong = String.valueOf((temp_long));
+                assertNotNull(tempstr);
+                assertNotNull(tempstrlong);
+            }
         }
     }
 }
