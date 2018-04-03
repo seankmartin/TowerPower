@@ -9,10 +9,10 @@ public class GameInfo {
     public static final String MORE_HINTS_NEEDED_KEY = "more_towers";
     public static final String MORE_MATERIALS_NEEDED_KEY = "more_mats";
     private Map<String, Object> initialPosition;
-    private final Map<String, Object>  hints;
-    private final Map<String, Object>  materials;
-    private final Map<String, Object> bases;
-    private final Map<String, Object>  towers;
+    private Map<String, Object>  hints;
+    private Map<String, Object>  materials;
+    private Map<String, Object> bases;
+    private Map<String, Object>  towers;
     private long materialsInventory;
     private long hintsInventory;
     private long timeBonus;
@@ -32,6 +32,16 @@ public class GameInfo {
         this.startTime = new Date();
         this.won = false;
         this.lost = false;
+    }
+
+    public void  clearValues() {
+        this.initialPosition = new HashMap<String, Object>();
+        this.hints = new HashMap<String, Object>();
+        this.materials = new HashMap<String, Object>();
+        this.bases = new HashMap<String, Object>();
+        this.towers = new HashMap<String, Object>();
+        this.materialsInventory = 0;
+        this.hintsInventory = 0;
     }
 
     public Map<String, Object> getInitialPosition() {

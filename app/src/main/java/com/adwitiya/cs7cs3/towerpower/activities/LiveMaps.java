@@ -503,6 +503,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (teamID.compareTo(notFoundMsg)==0){
             Toast.makeText(LiveMaps.this, notFoundMsg,
                     Toast.LENGTH_SHORT).show();
+
         }
         else {
             initialRenderMarkers();
@@ -550,6 +551,7 @@ public class LiveMaps extends AppCompatActivity implements  NavigationView.OnNav
         if (tmp != null) lat = (double) tmp;
         tmp = gameInfoMap.get("longitude");
         if (tmp != null) lon = (double) tmp;
+        gameInfo.clearValues();
         gameInfo.setStartLocation(new PositionHelper(lat,lon));
 
         Map<String, Object> basesMap = (Map<String, Object>) gameInfoMap.get("bases");
