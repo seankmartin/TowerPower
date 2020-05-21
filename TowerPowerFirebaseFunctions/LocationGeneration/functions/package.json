@@ -1,0 +1,26 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "./node_modules/.bin/eslint .",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase experimental:functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "@google/maps": "^0.4.5",
+    "firebase-admin": "~5.8.1",
+    "firebase-functions": "^0.8.1",
+    "geolib": "^2.0.24",
+    "random-location": "^1.0.12",
+    "randomise-array": "^1.0.4",
+    "sort-by-distance": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.12.0",
+    "eslint-plugin-promise": "^3.6.0"
+  },
+  "private": true
+}
